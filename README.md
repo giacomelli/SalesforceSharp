@@ -79,7 +79,7 @@ Roadmap
 --------
  - Add Create method
  - Add Delete method
- - Implements others authentcation flows:
+ - Implements others authentication flows:
  	-  Web server flow, where the server can securely protect the consumer secret.
  	-  User-agent flow, used by applications that cannot securely store the consumer secret.
  
