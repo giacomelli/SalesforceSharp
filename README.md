@@ -9,9 +9,7 @@ Features
 ===
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
- 	- Others authentication flows can be added implementing IAuthenticationFlow.
- 	   
- 
+   	- Others authentication flows can be added implementing IAuthenticationFlow.
  - 100% Unit Tests coveraged 
  - 100% code documentation
  - FxCop validated
@@ -67,9 +65,10 @@ Updating a record
 ```csharp
 
 // Using a class. Ever required property should be set.
-client.Update("Account", "<record id>", new Account() { Name = "name updated", Description = "description updated" }));
+client.Update("Account", "<record id>", new Account() 
+{ Name = "name updated", Description = "description updated" }));
 
-// Using a anonymous. Only specified properties will be updated.
+// Using an anonymous. Only required properties will be updated.
 client.Update("Account", "<record id>", new { Description = "description updated" }));
 
 ```
