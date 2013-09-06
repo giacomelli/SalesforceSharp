@@ -19,11 +19,12 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DocumentationFile>bin\Debug\SalesforceSharp.XML</DocumentationFile>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -38,6 +39,9 @@
   <ItemGroup>
     <Reference Include="HelperSharp">
       <HintPath>..\packages\HelperSharp.0.0.2.8\lib\net35\HelperSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="RestSharp">
       <HintPath>..\packages\RestSharp.104.1\lib\net4\RestSharp.dll</HintPath>
@@ -54,6 +58,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SalesforceClient.cs" />
     <Compile Include="SalesforceException.cs" />
+    <Compile Include="Security\AuthenticationInfo.cs" />
+    <Compile Include="Security\IAuthenticationFlow.cs" />
+    <Compile Include="Security\UsernamePasswordAuthenticationFlow.cs" />
+    <Compile Include="Serialization\DynamicJsonDeserializer.cs" />
+    <Compile Include="Serialization\SalesforceQueryResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

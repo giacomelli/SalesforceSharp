@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
-using RestSharp;
-using RestSharp.Deserializers;
 using HelperSharp;
+using Newtonsoft.Json.Linq;
+using RestSharp;
+using SalesforceSharp.Security;
+using SalesforceSharp.Serialization;
 
 namespace SalesforceSharp
 {
@@ -25,38 +28,7 @@ namespace SalesforceSharp
         /// <value>
         /// The API version.
         /// </value>
-        public string ApiVersion { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets the authorize URL.
-        /// </summary>
-        /// <remarks>
-        /// The default value is https://login.salesforce.com/services/oauth2/token.
-        /// For sandbox use "https://test.salesforce.com/services/oauth2/token.
-        /// </remarks>
-        /// <value>
-        /// The authorize URL.
-        /// </value>
-        public string AuthorizeUrl { get; set; }
-
-
-        /// <summary>
-        /// Gets the client id.
-        /// </summary>
-        /// <value>
-        /// The client id.
-        /// </value>
-        public string ClientId { get; private set; }
-
-
-        /// <summary>
-        /// Gets the client secret.
-        /// </summary>
-        /// <value>
-        /// The client secret.
-        /// </value>
-        public string ClientSecret { get; private set; }
+        public string ApiVersion { get; set; }       
 
         /// <summary>
         /// Gets a value indicating whether this instance is authenticated.
@@ -78,15 +50,10 @@ namespace SalesforceSharp
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
-        /// </summary>
-        /// <param name="clientId">The client id.</param>
-        /// <param name="clientSecret">The client secret.</param>
-        public SalesforceClient(string clientId, string clientSecret)
+        /// </summary>        
+        public SalesforceClient()
         {
             ApiVersion = "v28.0";
-            AuthorizeUrl = "https://login.salesforce.com/services/oauth2/token";            
-            ClientId = clientId;
-            ClientSecret = clientSecret;
         }
         #endregion
 
@@ -94,65 +61,94 @@ namespace SalesforceSharp
         /// <summary>
         /// Authenticates the client.
         /// </summary>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <returns></returns>
-        /// <exception cref="SalesforceException"></exception>
-        public bool Authenticate(string username, string password)
-        {            
-            var restClient = new RestClient();
-            restClient.BaseUrl = AuthorizeUrl;            
+        /// <param name="authenticationFlow">The authentication flow which will be used to authenticate on REST API.</param>
+        public void Authenticate(IAuthenticationFlow authenticationFlow)
+        {
+            var info = authenticationFlow.Authenticate();
+            m_accessToken = info.AccessToken;
+            InstanceUrl = info.InstanceUrl;
+            IsAuthenticated = true;
+        }
+     
+        /// <summary>
+        /// Execute a SOQL query and returns the result.
+        /// </summary>
+        /// <param name="query">The SOQL query.</param>
+        /// <returns>The API result for the query.</returns>
+        public IList<T> Query<T>(string query) where T : new()
+        {
+            var url = "{0}?q={1}".With(GetUrl("query"), query);
+            var response = Request<SalesforceQueryResult<T>>(url);
 
-            var request = new RestRequest(Method.POST);
-            request.RequestFormat = DataFormat.Json;
-            request.AddParameter("grant_type", "password");
-            request.AddParameter("client_id", ClientId);
-            request.AddParameter("client_secret", ClientSecret);                        
-            request.AddParameter("username", username);
-            request.AddParameter("password", password);
-
-            var response = restClient.Post(request);
-            IsAuthenticated = response.StatusCode == HttpStatusCode.OK;
-
-            var deserializer = new JsonDeserializer();
-            var responseData = deserializer.Deserialize<Dictionary<string, string>>(response);
-                                       
-            if (IsAuthenticated)
-            {
-                m_accessToken = responseData["access_token"];
-                InstanceUrl = responseData["instance_url"];
-            }
-            else
-            {
-                throw new SalesforceException(responseData["error"], responseData["error_description"]);
-            }
-             
-            return IsAuthenticated;
+            return response.Data.Records;
         }
 
         /// <summary>
-        /// Gets the object.
+        /// Updates a record.
         /// </summary>
-        /// <param name="objectName">Name of the object.</param>
-        public void GetObject(string objectName)
-        {
-            var client = new RestClient(GetObjectsUrl());
-            var request = new RestRequest(objectName);
-            request.RequestFormat = DataFormat.Json;
-            request.AddHeader("Authorization", "Bearer " + m_accessToken);
+        /// <param name="objectName">Name of the object in Salesforce.</param>
+        /// <param name="recordId">The record id.</param>
+        /// <param name="record">The record.</param>
+        public bool Update(string objectName, string recordId, object record)
+        {           
+            var response = Patch<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record);
 
-            var response = client.Get(request);
+            // HTTP status code 204 is returned if an existing record is updated.
+            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;                   
+            return recordUpdated;
         }
         #endregion
 
         #region Helpers
-        /// <summary>
-        /// Gets the objects URL.
-        /// </summary>
-        /// <returns></returns>
-        private string GetObjectsUrl()
+        private IRestResponse<T> Patch<T>(string baseUrl, string objectName, object record) where T : new()
         {
-            return "{0}/services/data/{1}/sobjects".With(InstanceUrl, ApiVersion);
+            return Request<T>(baseUrl, objectName, record, Method.PATCH);
+        }
+
+        private IRestResponse<T> Request<T>(string baseUrl, string objectName = null, object record = null, Method method = Method.GET) where T : new()
+        {
+            var client = new RestClient(baseUrl);
+            //client.AddHandler("application/json", new DynamicJsonDeserializer());
+            var request = new RestRequest(objectName);
+            request.RequestFormat = DataFormat.Json;
+            request.Method = method;
+            request.AddHeader("Authorization", "Bearer " + m_accessToken);
+
+            if (record != null)
+            {
+                request.AddBody(record);
+            }
+
+            var response = client.Execute<T>(request);
+            CheckApiException(response);
+
+            return response;
+        }
+
+        private string GetUrl(string resourceName)
+        {
+            return "{0}/services/data/{1}/{2}".With(InstanceUrl, ApiVersion, resourceName);
+        }
+
+        private void CheckApiException(IRestResponse response)
+        {
+            if ((int)response.StatusCode > 299)
+            {
+                var deserializer = new DynamicJsonDeserializer();
+                var responseData = deserializer.Deserialize<dynamic>(response);
+
+                var error = responseData[0];
+                var fieldsArray = error.fields as JArray;
+
+                if (fieldsArray == null)
+                {
+                    throw new SalesforceException(error.errorCode.Value, error.message.Value);
+                }
+                else
+                {
+                    throw new SalesforceException(error.errorCode.Value, error.message.Value, fieldsArray.Select(v => (string)v).ToArray());
+                }
+            }
         }
         #endregion
     }
