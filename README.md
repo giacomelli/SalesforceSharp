@@ -68,7 +68,7 @@ Updating a record
 client.Update("Account", "<record id>", new Account() 
 { Name = "name updated", Description = "description updated" }));
 
-// Using an anonymous. Only required properties will be updated.
+// Using an anonymous. Only specified properties will be updated.
 client.Update("Account", "<record id>", new { Description = "description updated" }));
 
 ```
