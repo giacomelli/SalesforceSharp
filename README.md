@@ -12,9 +12,17 @@ Features
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
+ - 100% Unit Tests coveraged 
+ - 100% code documentation
+ - FxCop validated
+ - Good (and good used) design patterns  
 
 --------
 
+Usage
+===
+PM> Install-Package SalesforceSharp
+> 
 
 Usage
 ===
@@ -104,8 +112,7 @@ client.Delete("Account", "<ID">);
 --------
 
 Roadmap
---------
- - Publish a NuGet package.
+-------- 
  - Implements others authentcation flows:
  	-  Web server flow, where the server can securely protect the consumer secret.
  	-  User-agent flow, used by applications that cannot securely store the consumer secret.
@@ -129,4 +136,5 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
+0.6.1 Publish NuGet package.
 0.5.0 First version.

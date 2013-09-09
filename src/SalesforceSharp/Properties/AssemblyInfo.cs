@@ -36,3 +36,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("0.5.0.0")]
 
 [assembly: InternalsVisibleTo("SalesforceSharp.UnitTests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

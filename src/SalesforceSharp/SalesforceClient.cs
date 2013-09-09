@@ -18,6 +18,7 @@ namespace SalesforceSharp
         #region Fields
         private string m_accessToken;
         private DynamicJsonDeserializer m_deserializer;
+        private IRestClient m_restClient;
         #endregion
 
         #region Properties
@@ -53,8 +54,18 @@ namespace SalesforceSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>        
-        public SalesforceClient()
+        public SalesforceClient() : this(new RestClient())
         {
+           
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
+        /// </summary>
+        /// <param name="restClient">The rest client.</param>
+        internal SalesforceClient(IRestClient restClient)
+        {
+            m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
         }
@@ -80,6 +91,8 @@ namespace SalesforceSharp
         /// <returns>The API result for the query.</returns>
         public IList<T> Query<T>(string query) where T : new()
         {
+            ExceptionHelper.ThrowIfNullOrEmpty("query", query);
+
             var url = "{0}?q={1}".With(GetUrl("query"), query);
             var response = Request<SalesforceQueryResult<T>>(url);
 
@@ -91,11 +104,14 @@ namespace SalesforceSharp
         /// </summary>
         /// <typeparam name="T">The record type.</typeparam>
         /// <param name="objectName">The name of the object in Salesforce.</param>
-        /// <param name="id">The record id.</param>
+        /// <param name="recordId">The record id.</param>
         /// <returns>The record with the specified id.</returns>
-        public T FindById<T>(string objectName, string id) where T : new()
+        public T FindById<T>(string objectName, string recordId) where T : new()
         {
-            var result = Query<T>("SELECT {0} FROM {1} WHERE Id = '{2}'".With(GetRecordProjection(typeof(T)), objectName, id));
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+
+            var result = Query<T>("SELECT {0} FROM {1} WHERE Id = '{2}'".With(GetRecordProjection(typeof(T)), objectName, recordId));
 
             return result.FirstOrDefault();
         }
@@ -108,7 +124,10 @@ namespace SalesforceSharp
         /// <returns>The Id of created record.</returns>
         public string Create (string objectName, object record) 
         {
-            var response = Post<object>(GetUrl("sobjects"), objectName, record);
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNull("record", record);
+
+            var response = Request<object>(GetUrl("sobjects"), objectName, record, Method.POST);
             return m_deserializer.Deserialize<dynamic>(response).id.Value;
         }
 
@@ -119,8 +138,12 @@ namespace SalesforceSharp
         /// <param name="recordId">The record id.</param>
         /// <param name="record">The record to be updated.</param>
         public bool Update(string objectName, string recordId, object record)
-        {           
-            var response = Patch<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record);
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNull("record", record);
+
+            var response = Request<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
             var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;                   
@@ -136,7 +159,10 @@ namespace SalesforceSharp
         /// <returns>True if was deleted, otherwise false.</returns>
         public bool Delete(string objectName, string recordId)
         {
-            var response = Del(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId));
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+
+            var response = Request<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), null, Method.DELETE);
 
             // HTTP status code 204 is returned if an existing record is deleted.
             var recoredDeleted = response.StatusCode == HttpStatusCode.NoContent;
@@ -145,25 +171,24 @@ namespace SalesforceSharp
         }
         #endregion
 
-        #region Helpers
-        private IRestResponse<T> Patch<T>(string baseUrl, string recordPath, object record) where T : new()
-        {
-            return Request<T>(baseUrl, recordPath, record, Method.PATCH);
-        }
-
-        private IRestResponse<T> Post<T>(string baseUrl, string objectName, object record) where T : new()
-        {
-            return Request<T>(baseUrl, objectName, record, Method.POST);
-        }
-
-        private IRestResponse Del(string baseUrl, string recordPath)
-        {
-            return Request<object>(baseUrl, recordPath, null, Method.DELETE);
-        }
-
+        #region Requests
+        /// <summary>
+        /// Perform the request against Salesforce's REST API.
+        /// </summary>
+        /// <typeparam name="T">The return type.</typeparam>
+        /// <param name="baseUrl">The base URL.</param>
+        /// <param name="objectName">The Name of the object.</param>
+        /// <param name="record">The record.</param>
+        /// <param name="method">The http method.</param>
+        /// <exception cref="System.InvalidOperationException">Please, execute Authenticate method before call any REST API operation.</exception>
         private IRestResponse<T> Request<T>(string baseUrl, string objectName = null, object record = null, Method method = Method.GET) where T : new()
         {
-            var client = new RestClient(baseUrl);
+            if (!IsAuthenticated)
+            {
+                throw new InvalidOperationException("Please, execute Authenticate method before call any REST API operation.");
+            }
+
+            m_restClient.BaseUrl = baseUrl;
             var request = new RestRequest(objectName);
             request.RequestFormat = DataFormat.Json;
             request.Method = method;
@@ -174,17 +199,18 @@ namespace SalesforceSharp
                 request.AddBody(record);
             }
 
-            var response = client.Execute<T>(request);
+            var response = m_restClient.Execute<T>(request);
             CheckApiException(response);
 
             return response;
         }
 
-        private string GetUrl(string resourceName)
-        {
-            return "{0}/services/data/{1}/{2}".With(InstanceUrl, ApiVersion, resourceName);
-        }
-
+        /// <summary>
+        /// Checks if an API exception was throw in the response.
+        /// </summary>
+        /// <param name="response">The response.</param>
+        /// <exception cref="SalesforceException">
+        /// </exception>
         private void CheckApiException(IRestResponse response)
         {
             if ((int)response.StatusCode > 299)
@@ -209,10 +235,27 @@ namespace SalesforceSharp
                 throw response.ErrorException;
             }
         }
+        #endregion
 
+        #region Helpers
+        /// <summary>
+        /// Gets the record projection fields.
+        /// </summary>
+        /// <param name="recordType">Type of the record.</param>
+        /// <returns></returns>
         private static string GetRecordProjection(Type recordType)
         {
             return String.Join(", ", recordType.GetProperties().Select(p => p.Name));
+        }
+
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <param name="resourceName">Name of the resource.</param>
+        /// <returns></returns>
+        private string GetUrl(string resourceName)
+        {
+            return "{0}/services/data/{1}/{2}".With(InstanceUrl, ApiVersion, resourceName);
         }
         #endregion
     }

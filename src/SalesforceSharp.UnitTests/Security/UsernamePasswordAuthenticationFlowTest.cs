@@ -12,6 +12,13 @@ namespace SalesforceSharp.UnitTests.Security
     public class UsernamePasswordAuthenticationFlowTest
     {
         [Test]
+        public void Constructor_NoRestClient_DefaultValues()
+        {
+           var target = new UsernamePasswordAuthenticationFlow("clientId", "clientSecret", "username", "password");
+           Assert.IsNotNull(target);
+        }
+
+        [Test]
         public void Constructor_InvalidArgs_Exception()
         {
             ExceptionAssert.IsThrowing(new ArgumentNullException("restClient"), () =>
