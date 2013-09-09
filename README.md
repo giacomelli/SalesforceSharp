@@ -80,7 +80,7 @@ client.Create("Account", new Account()
 { Name = "name created", Description = "description created" }));
 
 // Using an anonymous.
-client.Create("Account", new { Description = "description updated" }));
+client.Create("Account", new { Name = "name created", Description = "description created" }));
 
 ```
 
