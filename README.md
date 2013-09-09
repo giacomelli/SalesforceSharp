@@ -136,5 +136,5 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
-*0.6.1 Publish NuGet package.
-*0.5.0 First version.
+ - 0.6.1 Publish NuGet package.
+ - 0.5.0 First version.
