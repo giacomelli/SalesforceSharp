@@ -7,6 +7,8 @@ An easy to use .NET client library for Salesforce REST API
 
 Features
 ===
+ - Create, Update, Delete and Query records.
+ - FindById to easy found records.
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
@@ -60,6 +62,28 @@ foreach(var r in records)
 
 ```
 
+Finding a record by Id
+---
+
+```csharp
+
+var record = client.FindById<Account>("Account", "<ID>");
+
+```
+
+Creating a record
+---
+```csharp
+
+// Using a class. 
+client.Create("Account", new Account() 
+{ Name = "name created", Description = "description created" }));
+
+// Using an anonymous.
+client.Create("Account", new { Description = "description updated" }));
+
+```
+
 Updating a record
 ---
 ```csharp
@@ -73,12 +97,19 @@ client.Update("Account", "<record id>", new { Description = "description updated
 
 ```
 
+Deleting a record
+---
+```csharp
+
+client.Delete("Account", "<ID">);
+
+```
+
 --------
 
 Roadmap
 --------
- - Add Create method
- - Add Delete method
+ - Publish a NuGet package.
  - Implements others authentcation flows:
  	-  Web server flow, where the server can securely protect the consumer secret.
  	-  User-agent flow, used by applications that cannot securely store the consumer secret.

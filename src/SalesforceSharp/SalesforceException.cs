@@ -12,6 +12,7 @@ namespace SalesforceSharp
     #region Enum
     /// <summary>
     /// The Salesforce REST API's error.
+    /// http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_concepts_core_data_objects.htm#i1421521
     /// </summary>
     public enum SalesforceError
     {
@@ -56,14 +57,54 @@ namespace SalesforceSharp
         NotFound,
 
         /// <summary>
-        /// Query is mal formed.
+        /// An invalid query string was specified. For example, the query string was longer than 20,000 characters.
         /// </summary>
         MalFormedQuery,
 
         /// <summary>
         /// Some field validation has throw an exception.
         /// </summary>
-        FieldCustomValidationException        
+        FieldCustomValidationException,
+
+        /// <summary>
+        /// Some field used on update or insert was invalid.
+        /// </summary>
+        InvalidFieldForInsertUpdate,
+
+        /// <summary>
+        /// Client id used to authenticate is invalid.
+        /// </summary>
+        InvalidClientId,
+
+        /// <summary>
+        /// Invalid field.
+        /// </summary>
+        InvalidField,
+
+        /// <summary>
+        /// Required field missing.
+        /// </summary>
+        RequiredFieldMissing,
+
+        /// <summary>
+        /// String is too long.
+        /// </summary>
+        StringTooLong,
+
+        /// <summary>
+        /// You can't reference an object that has been deleted.
+        /// </summary>
+        EntityIsDeleted,
+
+        /// <summary>
+        /// An ID must be either 15 characters, or 18 characters with a valid case-insensitive extension.
+        /// </summary>
+        MalFormedId,
+
+        /// <summary>
+        /// An invalid operator was used in the query() filter clause, at least for that field.
+        /// </summary>
+        InvalidQueryFilterOperator
     }
     #endregion
 

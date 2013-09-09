@@ -96,6 +96,77 @@ namespace SalesforceSharp.UnitTests
                 Assert.IsNotNullOrEmpty(actual[0].Name);
             }
         }
+
+        [Test]
+        public void Query_ValidQueryWithObjectWrongPropertyTypes_Exception()
+        {
+            var target = CreateClientAndAuth();
+
+            ExceptionAssert.IsThrowing(typeof(FormatException), () =>
+            {
+                target.Query<WrongRecordStub>("SELECT IsDeleted FROM Account");
+            });
+            
+        }
+        #endregion
+
+        #region FindById
+        [Test]
+        public void FindById_NotExistingID_Null()
+        {
+            var target = CreateClientAndAuth();
+            Assert.IsNull(target.FindById<RecordStub>("Contact", "003i000000K2BP0AAM"));            
+        }
+
+        [Test]
+        public void FindById_ValidId_Record()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+            var actual = target.FindById<ContactStub>("Contact", id);
+
+            Assert.IsNotNull(actual);
+            Assert.AreEqual(record.FirstName, actual.FirstName);
+            Assert.AreEqual(record.LastName, actual.LastName);
+        }
+        #endregion
+
+        #region Create
+        [Test]
+        public void Create_ValidRecordWithAnonymous_Created()
+        {
+            var target = CreateClientAndAuth();
+            var record = new 
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+            Assert.IsFalse(String.IsNullOrWhiteSpace(id));
+        }
+
+        [Test]
+        public void Create_ValidRecordWithClassWithWrongProperties_Exception()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName1 = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidField, "No such column 'FirstName1' on sobject of type Contact"), () =>
+            {
+                target.Create("Contact", record);
+            });            
+        }
         #endregion
 
         #region Update
@@ -133,6 +204,70 @@ namespace SalesforceSharp.UnitTests
             {
                 Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub {Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
             }
+        }
+
+        [Test]
+        public void Update_ValidRecordWithClassWithWrongProperties_Exception()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
+            Assert.IsNotNull(actual);
+
+            if (actual.Count > 0)
+            {
+                ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidFieldForInsertUpdate, "Unable to create/update fields: IsDeleted. Please check the security settings of this field and verify that it is read/write for your profile or permission set."), () =>
+                {
+                    target.Update("Account", actual[0].Id, new WrongRecordStub { Name = actual[0].Name, Description = DateTime.Now + " UPDATED" });
+                });
+            }
+        }
+        #endregion
+
+        #region Delete
+        [Test]
+        public void Delete_MalFormedId_Exception()
+        {
+            var target = CreateClientAndAuth();
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.EntityIsDeleted, "malformed id 003i000000K27rxAAC"), () =>
+            {
+                target.Delete("Contact", "003i000000K27rxAAC");
+            });
+        }
+
+        [Test]
+        public void Delete_AlreadyDeleted_Exception()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+
+            Assert.IsTrue(target.Delete("Contact", id));
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.EntityIsDeleted, "Entity is deleted"), () =>
+            {
+                target.Delete("Contact", id);
+            });
+        }
+
+        [Test]
+        public void Delete_ExistingId_Deleted()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+
+            Assert.IsTrue(target.Delete("Contact", id));
         }
         #endregion
 
