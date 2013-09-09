@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 using HelperSharp;
 using RestSharp;
-using RestSharp.Deserializers;
 using SalesforceSharp.Serialization;
 
 namespace SalesforceSharp.Security
@@ -29,6 +23,7 @@ namespace SalesforceSharp.Security
     public class UsernamePasswordAuthenticationFlow : IAuthenticationFlow
     {
         #region Fields
+        private IRestClient m_restClient;
         private string m_clientId;
         private string m_clientSecret;
         private string m_username;
@@ -43,13 +38,28 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password)
+        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password) : 
+            this(new RestClient(), clientId, clientSecret, username, password)
+        {            
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsernamePasswordAuthenticationFlow"/> class.
+        /// </summary>
+        /// <param name="restClient">The REST client which will be used.</param>
+        /// <param name="clientId">The client id.</param>
+        /// <param name="clientSecret">The client secret.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password)
         {
+            ExceptionHelper.ThrowIfNull("restClient", restClient);
             ExceptionHelper.ThrowIfNullOrEmpty("clientId", clientId);
             ExceptionHelper.ThrowIfNullOrEmpty("clientSecret", clientSecret);
             ExceptionHelper.ThrowIfNullOrEmpty("username", username);
             ExceptionHelper.ThrowIfNullOrEmpty("password", password);
 
+            m_restClient = restClient;
             m_clientId = clientId;
             m_clientSecret = clientSecret;
             m_username = username;
@@ -69,7 +79,7 @@ namespace SalesforceSharp.Security
         public string TokenRequestEndpointUrl { get; set; }
         #endregion
 
-        #region Methods        
+        #region Methods
         /// <summary>
         /// Authenticate in the Salesforce REST's API.
         /// </summary>
@@ -81,8 +91,7 @@ namespace SalesforceSharp.Security
         /// </remarks>
         public AuthenticationInfo Authenticate()
         {
-            var restClient = new RestClient();
-            restClient.BaseUrl = TokenRequestEndpointUrl;
+            m_restClient.BaseUrl = TokenRequestEndpointUrl;
 
             var request = new RestRequest(Method.POST);
             request.RequestFormat = DataFormat.Json;
@@ -92,7 +101,7 @@ namespace SalesforceSharp.Security
             request.AddParameter("username", m_username);
             request.AddParameter("password", m_password);
 
-            var response = restClient.Post(request);
+            var response = m_restClient.Post(request);
             var isAuthenticated = response.StatusCode == HttpStatusCode.OK;
 
             var deserializer = new DynamicJsonDeserializer();

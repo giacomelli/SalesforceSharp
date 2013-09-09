@@ -3,14 +3,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp", "SalesforceSharp\SalesforceSharp.csproj", "{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.UnitTests", "SalesforceSharp.UnitTests\SalesforceSharp.UnitTests.csproj", "{9253ECDB-CF39-4F08-9696-B85EA6B637B6}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{96876F6A-E11B-4A68-8132-C1559168BA18}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\NuGet.Config = .nuget\NuGet.Config
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.UnitTests", "SalesforceSharp.UnitTests\SalesforceSharp.UnitTests.csproj", "{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.FunctionalTests", "SalesforceSharp.FunctionalTests\SalesforceSharp.FunctionalTests.csproj", "{276ECE17-1F85-430F-AF1A-68D50B8B9A27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,10 +24,19 @@ Global
 		{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9253ECDB-CF39-4F08-9696-B85EA6B637B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9253ECDB-CF39-4F08-9696-B85EA6B637B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9253ECDB-CF39-4F08-9696-B85EA6B637B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9253ECDB-CF39-4F08-9696-B85EA6B637B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = SalesforceSharp\SalesforceSharp.csproj
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,10 +1,10 @@
 using System;
 using NUnit.Framework;
 using SalesforceSharp.Security;
-using SalesforceSharp.UnitTests.Stubs;
+using SalesforceSharp.FunctionalTests.Stubs;
 using TestSharp;
 
-namespace SalesforceSharp.UnitTests
+namespace SalesforceSharp.FunctionalTests
 {
     [TestFixture]
     public class SalesforceClientTest

@@ -1,7 +1,7 @@
 ﻿using System;
 using TestSharp;
 
-namespace SalesforceSharp.UnitTests
+namespace SalesforceSharp.FunctionalTests
 {
     /// <summary>
     /// Test's configurations.
@@ -16,16 +16,16 @@ namespace SalesforceSharp.UnitTests
         {
             try
             {
-                TokenRequestEndpointUrl = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "TokenRequestEndpointUrl");
-                ClientId = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "ClientId");
-                ClientSecret = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "ClientSecret");
-                Username = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "Username");
-                Password = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "Password");
-                ObjectName = ConfigHelper.ReadAppSetting("SalesforceSharp.UnitTests", "ObjectName");                
+                TokenRequestEndpointUrl = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "TokenRequestEndpointUrl");
+                ClientId = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ClientId");
+                ClientSecret = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ClientSecret");
+                Username = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "Username");
+                Password = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "Password");
+                ObjectName = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ObjectName");                
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException("Please, check the Salesforce.UnitTests' App.config and define the test configurations.");
+                throw new InvalidOperationException("Please, check the Salesforce.FunctionalTests' App.config and define the test configurations.", ex);
             }
 
             if (String.IsNullOrWhiteSpace(TokenRequestEndpointUrl)
@@ -35,7 +35,7 @@ namespace SalesforceSharp.UnitTests
             || String.IsNullOrWhiteSpace(Password)
             || String.IsNullOrWhiteSpace(ObjectName))
             {
-                throw new InvalidOperationException("Please, check the Salesforce.UnitTests' App.config and define ALL the test configurations.");
+                throw new InvalidOperationException("Please, check the Salesforce.FunctionalTests' App.config and define ALL the test configurations.");
             }           
         }
         #endregion

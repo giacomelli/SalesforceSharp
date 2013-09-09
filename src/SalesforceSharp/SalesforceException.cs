@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using HelperSharp;
 
 namespace SalesforceSharp
 {
     #region Enum
     /// <summary>
     /// The Salesforce REST API's error.
-    /// http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_concepts_core_data_objects.htm#i1421521
+    /// http://www.salesforce.com/us/developer/docs/api/Content/sforce_api_calls_concepts_core_data_objects.htm
     /// </summary>
     public enum SalesforceError
     {

@@ -12,10 +12,6 @@ Features
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
- - 100% Unit Tests coveraged 
- - 100% code documentation
- - FxCop validated
- - Good (and good used) design patterns  
 
 --------
 

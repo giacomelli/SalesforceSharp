@@ -1,5 +1,8 @@
-﻿using System;
+using System;
+using System.Net;
 using NUnit.Framework;
+using RestSharp;
+using Rhino.Mocks;
 using SalesforceSharp.Security;
 using TestSharp;
 
@@ -9,64 +12,69 @@ namespace SalesforceSharp.UnitTests.Security
     public class UsernamePasswordAuthenticationFlowTest
     {
         [Test]
-        public void Authenticate_InvalidUsername_AuthenticationFailure()
+        public void Constructor_InvalidArgs_Exception()
         {
-            var target = new UsernamePasswordAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, "invalid user name", TestConfig.Password);
-            target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
+            ExceptionAssert.IsThrowing(new ArgumentNullException("restClient"), () =>
+            {
+                new UsernamePasswordAuthenticationFlow(null, "clientId", "clientSecret", "username", "password");
+            });
 
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.AuthenticationFailure, "authentication failure"), () =>
+            ExceptionAssert.IsThrowing(new ArgumentException("Argument 'clientId' can't be empty.", "clientId"), () =>
+            {
+                new UsernamePasswordAuthenticationFlow(new RestClient(), "", "clientSecret", "username", "password");
+            });
+
+            ExceptionAssert.IsThrowing(new ArgumentException("Argument 'clientSecret' can't be empty.", "clientSecret"), () =>
+            {
+                new UsernamePasswordAuthenticationFlow(new RestClient(), "clientId", "", "username", "password");
+            });
+
+            ExceptionAssert.IsThrowing(new ArgumentException("Argument 'username' can't be empty.", "username"), () =>
+            {
+                new UsernamePasswordAuthenticationFlow(new RestClient(), "clientId", "clientSecret", "", "password");
+            });
+
+            ExceptionAssert.IsThrowing(new ArgumentException("Argument 'password' can't be empty.", "password"), () =>
+            {
+                new UsernamePasswordAuthenticationFlow(new RestClient(), "clientId", "clientSecret", "username", "");
+            });
+        }
+
+        [Test]
+        public void Authenticate_Failed_Exception()
+        {
+            var response = MockRepository.GenerateMock<IRestResponse>();
+            response.Expect(r => r.Content).Return("{ error: 'authentication failure', error_description: 'authentication failed' }");
+            response.Expect(r => r.StatusCode).Return(HttpStatusCode.BadRequest);
+
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("tokenUrl");
+            restClient.Expect(r => r.Execute(null)).IgnoreArguments().Return(response);
+
+            var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");
+            target.TokenRequestEndpointUrl = "tokenUrl";
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.AuthenticationFailure, "authentication failed"), () =>
             {
                 target.Authenticate();
             });
         }
 
         [Test]
-        public void RequestAccessToken_InvalidPassword_InvalidPassword()
+        public void Authenticate_Success_AuthenticationInfo()
         {
-            var target = new UsernamePasswordAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, "invalid password");
-            target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
+            var response = MockRepository.GenerateMock<IRestResponse>();
+            response.Expect(r => r.Content).Return("{ access_token: 'access token 1', instance_url: 'instance url 2' }");
+            response.Expect(r => r.StatusCode).Return(HttpStatusCode.OK);
 
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidPassword, "authentication failure - invalid password"), () =>
-            {
-                target.Authenticate();
-            });
-        }
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("https://login.salesforce.com/services/oauth2/token");
+            restClient.Expect(r => r.Execute(null)).IgnoreArguments().Return(response);
 
-        [Test]
-        public void RequestAccessToken_InvalidClientId_InvalidClientId()
-        {            
-            var target = new UsernamePasswordAuthenticationFlow("Invalid client id", TestConfig.ClientSecret, TestConfig.Username, TestConfig.Password);
-            target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
-
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidClient, "client identifier invalid"), () =>
-            {
-                target.Authenticate();
-            });
-        }
-
-        [Test]
-        public void RequestAccessToken_InvalidClientSecret_InvalidClientSecret()
-        {
-            var target = new UsernamePasswordAuthenticationFlow(TestConfig.ClientId, "invalid client secret", TestConfig.Username, TestConfig.Password);
-            target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
-
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidClient, "invalid client credentials"), () =>
-            {
-                target.Authenticate();
-            });
-        }
-
-        [Test]
-        public void RequestAccessToken_ValidCredentials_Authenticated()
-        {
-            var target = new UsernamePasswordAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, TestConfig.Password);
-            target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
-
+            var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");            
             var actual = target.Authenticate();
-            Assert.IsNotNull(actual);
-            Assert.IsTrue(actual.AccessToken.Length > 0);
-            Assert.IsTrue(actual.InstanceUrl.Length > 0);
-            Assert.IsTrue(Uri.IsWellFormedUriString(actual.InstanceUrl, UriKind.Absolute));
+            Assert.AreEqual("access token 1", actual.AccessToken);
+            Assert.AreEqual("instance url 2", actual.InstanceUrl);
         }
     }
 }
