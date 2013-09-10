@@ -8,6 +8,7 @@ using RestSharp;
 using Rhino.Mocks;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
+using SalesforceSharp.UnitTests.Stubs;
 using TestSharp;
 
 namespace SalesforceSharp.UnitTests
@@ -118,7 +119,15 @@ namespace SalesforceSharp.UnitTests
             {
                 target.Create("TESTE", "TESTE");
             });
-         }        
+        }
+
+        [Test]
+        public void Create_NoErrorReceived_Created()
+        {
+            var target = CreateClientWithResponseOk<object>(HttpStatusCode.NoContent, null);
+            var actual = target.Create("TESTE", "TESTE");
+            Assert.AreEqual("id", actual);
+        }  
         #endregion
 
         #region Delete
@@ -153,6 +162,14 @@ namespace SalesforceSharp.UnitTests
             {
                 target.Delete("TESTE", "TESTE");
             });
+        }
+
+        [Test]
+        public void Delete_NoErrorReceived_Deleted()
+        {
+            var target = CreateClientWithResponseOk<object>(HttpStatusCode.NoContent, null);
+
+            Assert.IsTrue(target.Delete("TESTE", "TESTE"));            
         }
         #endregion
 
@@ -189,6 +206,14 @@ namespace SalesforceSharp.UnitTests
                 target.FindById<Exception>("TESTE", "TESTE");
             });
         }
+
+        [Test]
+        public void FindById_NoErrorReceived_Record()
+        {
+            var target = CreateClientWithResponseOk<SalesforceQueryResult<RecordStub>>(HttpStatusCode.OK, new SalesforceQueryResult<RecordStub>() { Records = new List<RecordStub>() { new RecordStub() } });
+
+            Assert.IsNotNull(target.FindById<RecordStub>("TESTE", "TESTE"));           
+        }
         #endregion
 
         #region Query
@@ -212,6 +237,14 @@ namespace SalesforceSharp.UnitTests
             {
                 target.Query<Exception>("TESTE");
             });
+        }
+
+        [Test]
+        public void Query_NoErrorReceived_Records()
+        {
+            var target = CreateClientWithResponseOk<SalesforceQueryResult<RecordStub>>(HttpStatusCode.OK, new SalesforceQueryResult<RecordStub>() { Records = new List<RecordStub>() { new RecordStub(), new RecordStub() } });
+            var actual = target.Query<RecordStub>("TESTE");
+            Assert.AreEqual(2, actual.Count);
         }
         #endregion
 
@@ -259,6 +292,60 @@ namespace SalesforceSharp.UnitTests
                 target.Update("TESTE", "TESTE", "TESTE");
             });
         }
+
+        [Test]
+        public void Update_ErrorReceivedWithInvalidFields_Exception()
+        {
+            var response = MockRepository.GenerateMock<IRestResponse<object>>();
+            response.Expect(r => r.Content).Return("[{ errorCode: 'error', message: 'error', fields: ['field1', 'field2'] }]");
+            response.Expect(r => r.StatusCode).Return(HttpStatusCode.BadRequest);
+
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("tokenUrl");
+            restClient.Expect(r => r.Execute<object>(null)).IgnoreArguments().Return(response);
+
+            var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
+            flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));
+
+            var target = new SalesforceClient(restClient);
+            target.Authenticate(flow);
+
+            ExceptionAssert.IsThrowing(new SalesforceException("TESTE", "error", new string[] { "field1", "field2" }), () =>
+            {
+                target.Update("TESTE", "TESTE", "TESTE");
+            });
+        }
+
+        [Test]
+        public void Update_StatusCodeOkButErrorException_Exception()
+        {
+            var response = MockRepository.GenerateMock<IRestResponse<object>>();
+            response.Expect(r => r.Content).Return("");
+            response.Expect(r => r.StatusCode).Return(HttpStatusCode.NoContent);
+            response.Expect(r => r.ErrorException).Return(new Exception("TESTE"));
+
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("tokenUrl");
+            restClient.Expect(r => r.Execute<object>(null)).IgnoreArguments().Return(response);
+
+            var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
+            flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));
+
+            var target = new SalesforceClient(restClient);
+            target.Authenticate(flow);
+
+            ExceptionAssert.IsThrowing(new Exception("TESTE"), () =>
+            {
+                target.Update("TESTE", "TESTE", "TESTE");
+            });
+        }
+
+        [Test]
+        public void Update_NoErrorReceived_Updated()
+        {
+            var target = CreateClientWithResponseOk<object>(HttpStatusCode.NoContent, null);
+            Assert.IsTrue(target.Update("TESTE", "TESTE", "TESTE"));
+        }
         #endregion
 
         #region Helpers
@@ -271,6 +358,28 @@ namespace SalesforceSharp.UnitTests
             var restClient = MockRepository.GenerateMock<IRestClient>();
             restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("tokenUrl");
             restClient.Expect(r => r.Execute<T>(null)).IgnoreArguments().Return(response);
+
+            var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
+            flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));
+
+            var target = new SalesforceClient(restClient);
+            target.Authenticate(flow);
+
+            return target;
+        }
+
+        private SalesforceClient CreateClientWithResponseOk<T>(HttpStatusCode statusCode, T data) where T : new()
+        {
+            var response = MockRepository.GenerateMock<IRestResponse<T>>();
+            response.Expect(r => r.Content).Return("{\"id\":\"id\",\"records\":[{\"Id\": \"1\"},{\"Id\":\"2\"}]}");
+            response.Expect(r => r.StatusCode).Return(statusCode);
+            response.Expect(r => r.ErrorException).Return(null);
+            response.Expect(r => r.Data).Return(data);
+
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            //restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("url/services/data/v28.0/query?q=SELECT Id FROM TESTE WHERE Id = 'TESTE'");
+            restClient.Expect(r => r.Execute<T>(null)).IgnoreArguments().Return(response);
+
 
             var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
             flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));

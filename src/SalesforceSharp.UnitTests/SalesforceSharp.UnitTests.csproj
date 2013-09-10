@@ -101,6 +101,7 @@
     <Compile Include="SalesforceClientTest.cs" />
     <Compile Include="SalesforceExceptionTest.cs" />
     <Compile Include="Security\UsernamePasswordAuthenticationFlowTest.cs" />
+    <Compile Include="Stubs\RecordStub.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SalesforceSharp\SalesforceSharp.csproj">
