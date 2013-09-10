@@ -19,7 +19,7 @@ Features
 
 --------
 
-Usage
+Setup
 ===
 PM> Install-Package SalesforceSharp
 > 
