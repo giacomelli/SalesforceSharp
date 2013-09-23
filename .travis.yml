@@ -6,4 +6,4 @@ install:
  
 script:
   - xbuild ./src/SalesforceSharp.sln /property:"Configuration=Debug;Platform=Any CPU"
-  - nunit-console ./SalesforceSharp.UnitTests/bin/Debug/SalesforceSharp.UnitTests.dll
+  - nunit-console ./src/SalesforceSharp.UnitTests/bin/Debug/SalesforceSharp.UnitTests.dll
