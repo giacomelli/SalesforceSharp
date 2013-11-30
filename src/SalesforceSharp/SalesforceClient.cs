@@ -88,15 +88,43 @@ namespace SalesforceSharp
         /// Executes a SOQL query and returns the result.
         /// </summary>
         /// <param name="query">The SOQL query.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
         /// <returns>The API result for the query.</returns>
-        public IList<T> Query<T>(string query) where T : new()
+        public IList<T> Query<T>(string query, string altUrl = "") where T : new()
         {
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
-            var url = "{0}?q={1}".With(GetUrl("query"), query);
+            string url;
+            if (altUrl == string.Empty)
+            {
+                url = "{0}?q={1}".With(GetUrl("query"), query);
+            }
+            else
+            {
+                url = "{0}?q={1}".With(GetAltUrl(altUrl), query);
+            }
             var response = Request<SalesforceQueryResult<T>>(url);
 
             return response.Data.Records;
+        }
+
+        /// <summary>
+        /// Finds a record by Id.
+        /// </summary>
+        /// <typeparam name="T">The record type.</typeparam>
+        /// <param name="objectName">The name of the object in Salesforce.</param>
+        /// <param name="recordId">The record id.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The record with the specified id.</returns>
+        public T FindById<T>(string objectName, string recordId, string altUrl) where T : new()
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var result = Query<T>("SELECT {0} FROM {1} WHERE Id = '{2}'".With(GetRecordProjection(typeof(T)), objectName, recordId), altUrl);
+
+            return result.FirstOrDefault();
         }
 
         /// <summary>
@@ -117,12 +145,29 @@ namespace SalesforceSharp
         }
 
         /// <summary>
+        /// Creates a record
+        /// </summary>
+        /// <param name="objectName">The name of the object in Salesforce.</param>
+        /// <param name="record">The record to be created.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The Id of created record.</returns>
+        public string Create(string objectName, object record, string altUrl)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNull("record", record);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var response = Request<object>(GetAltUrl(altUrl), objectName, record, Method.POST);
+            return m_deserializer.Deserialize<dynamic>(response).id.Value;
+        }
+
+        /// <summary>
         /// Creates a record.
         /// </summary>
         /// <param name="objectName">The name of the object in Salesforce.</param>
         /// <param name="record">The record to be created.</param>
         /// <returns>The Id of created record.</returns>
-        public string Create (string objectName, object record) 
+        public string Create(string objectName, object record) 
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
             ExceptionHelper.ThrowIfNull("record", record);
@@ -146,9 +191,52 @@ namespace SalesforceSharp
             var response = Request<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
+            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;
+
+            return recordUpdated;
+        }
+
+        /// <summary>
+        /// Updates a record.
+        /// </summary>
+        /// <param name="objectName">The name of the object in Salesforce.</param>
+        /// <param name="recordId">The record id.</param>
+        /// <param name="record">The record to be updated.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        public bool Update(string objectName, string recordId, object record, string altUrl)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNull("record", record);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var response = Request<object>(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
+
+            // HTTP status code 204 is returned if an existing record is updated.
             var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;                   
             
             return recordUpdated;
+        }
+
+        /// <summary>
+        /// Deletes a record.
+        /// </summary>
+        /// <param name="objectName">The name of the object in Salesforce.</param>
+        /// <param name="recordId">The record id which will be deleted.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>True if was deleted, otherwise false.</returns>
+        public bool Delete(string objectName, string recordId, string altUrl)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var response = Request<object>(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), null, Method.DELETE);
+
+            // HTTP status code 204 is returned if an existing record is deleted.
+            var recoredDeleted = response.StatusCode == HttpStatusCode.NoContent;
+
+            return recoredDeleted;
         }
 
         /// <summary>
@@ -256,6 +344,11 @@ namespace SalesforceSharp
         private string GetUrl(string resourceName)
         {
             return "{0}/services/data/{1}/{2}".With(InstanceUrl, ApiVersion, resourceName);
+        }
+
+        private string GetAltUrl(string url)
+        {
+            return "{0}/{1}".With(InstanceUrl, url);
         }
         #endregion
     }

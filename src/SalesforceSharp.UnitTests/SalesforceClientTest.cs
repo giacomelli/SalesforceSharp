@@ -16,6 +16,8 @@ namespace SalesforceSharp.UnitTests
     [TestFixture]
     public class SalesforceClientTest
     {
+        private const string AltUrl = "someurl/somepath";
+
         #region Constructors
         [Test]
         public void Constructor_NoArgs_DefaultValues()
@@ -128,6 +130,16 @@ namespace SalesforceSharp.UnitTests
             var actual = target.Create("TESTE", "TESTE");
             Assert.AreEqual("id", actual);
         }  
+
+        [Test]
+        public void CreateWithOverrideUrl_NoErrorReceived_Created()
+        {
+            string addedUrl = string.Empty;
+            var target = CreateAltUrlClientWithResponseOk<object>(HttpStatusCode.NoContent, null, (urlParam) => addedUrl = urlParam);
+            var actual = target.Create("TESTE", "TESTE", AltUrl);
+            Assert.AreEqual("id", actual);
+            Assert.That(addedUrl.IndexOf(string.Format("url/{0}", AltUrl)), Is.EqualTo(0));
+        }
         #endregion
 
         #region Delete
@@ -170,6 +182,17 @@ namespace SalesforceSharp.UnitTests
             var target = CreateClientWithResponseOk<object>(HttpStatusCode.NoContent, null);
 
             Assert.IsTrue(target.Delete("TESTE", "TESTE"));            
+        }
+
+        [Test]
+        public void DeleteWithOverrideUrl_NoErrorReceived_Deleted()
+        {
+            string addedUrl = string.Empty;
+            var target = CreateAltUrlClientWithResponseOk<object>(HttpStatusCode.NoContent, null, (urlParam) => addedUrl = urlParam);
+
+            Assert.IsTrue(target.Delete("TESTE", "TESTE", AltUrl));
+            Assert.That(addedUrl.IndexOf(string.Format("url/{0}", AltUrl)), Is.EqualTo(0));
+
         }
         #endregion
 
@@ -214,6 +237,16 @@ namespace SalesforceSharp.UnitTests
 
             Assert.IsNotNull(target.FindById<RecordStub>("TESTE", "TESTE"));           
         }
+
+        [Test]
+        public void FindByIdWithOverrideUrl_NoErrorReceived_Record()
+        {
+            string addedUrl = string.Empty;
+            var target = CreateAltUrlClientWithResponseOk<SalesforceQueryResult<RecordStub>>(HttpStatusCode.OK, new SalesforceQueryResult<RecordStub>() { Records = new List<RecordStub>() { new RecordStub() } }, (urlParam) => addedUrl = urlParam);
+
+            Assert.IsNotNull(target.FindById<RecordStub>("TESTE", "TESTE", AltUrl));
+            Assert.That(addedUrl.IndexOf(string.Format("url/{0}", AltUrl)), Is.EqualTo(0));
+        }
         #endregion
 
         #region Query
@@ -245,6 +278,16 @@ namespace SalesforceSharp.UnitTests
             var target = CreateClientWithResponseOk<SalesforceQueryResult<RecordStub>>(HttpStatusCode.OK, new SalesforceQueryResult<RecordStub>() { Records = new List<RecordStub>() { new RecordStub(), new RecordStub() } });
             var actual = target.Query<RecordStub>("TESTE");
             Assert.AreEqual(2, actual.Count);
+        }
+
+        [Test]
+        public void QueryAltUrl_NoErrorReceived_Records()
+        {
+            string addedUrl = string.Empty;
+            var target = CreateAltUrlClientWithResponseOk<SalesforceQueryResult<RecordStub>>(HttpStatusCode.OK, new SalesforceQueryResult<RecordStub>() { Records = new List<RecordStub>() { new RecordStub(), new RecordStub() } }, (urlParam) => addedUrl = urlParam);
+            var actual = target.Query<RecordStub>("TESTE", AltUrl);
+            Assert.AreEqual(2, actual.Count);
+            Assert.That(addedUrl.IndexOf(string.Format("url/{0}", AltUrl)), Is.EqualTo(0));
         }
         #endregion
 
@@ -346,6 +389,15 @@ namespace SalesforceSharp.UnitTests
             var target = CreateClientWithResponseOk<object>(HttpStatusCode.NoContent, null);
             Assert.IsTrue(target.Update("TESTE", "TESTE", "TESTE"));
         }
+
+        [Test]
+        public void UpdateAltUrl_NoErrorReceived_Updated()
+        {
+            string addedUrl = string.Empty;
+            var target = CreateAltUrlClientWithResponseOk<object>(HttpStatusCode.NoContent, null, (urlParam) => addedUrl = urlParam);
+            Assert.IsTrue(target.Update("TESTE", "TESTE", "TESTE", AltUrl));
+            Assert.That(addedUrl.IndexOf(string.Format("url/{0}", AltUrl)), Is.EqualTo(0));
+        }
         #endregion
 
         #region Helpers
@@ -381,6 +433,27 @@ namespace SalesforceSharp.UnitTests
             restClient.Expect(r => r.Execute<T>(null)).IgnoreArguments().Return(response);
 
 
+            var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
+            flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));
+
+            var target = new SalesforceClient(restClient);
+            target.Authenticate(flow);
+
+            return target;
+        }
+
+        private SalesforceClient CreateAltUrlClientWithResponseOk<T>(HttpStatusCode statusCode, T data, Action<string> recordUrl) where T : new()
+        {
+            var response = MockRepository.GenerateMock<IRestResponse<T>>();
+            response.Expect(r => r.Content).Return("{\"id\":\"id\",\"records\":[{\"Id\": \"1\"},{\"Id\":\"2\"}]}");
+            response.Expect(r => r.StatusCode).Return(statusCode);
+            response.Expect(r => r.ErrorException).Return(null);
+            response.Expect(r => r.Data).Return(data);
+
+            var restClient = MockRepository.GenerateMock<IRestClient>();
+            restClient.Expect(r => r.BaseUrl = string.Format("url{0}/TESTE", AltUrl)).IgnoreArguments().Do(recordUrl);
+            restClient.Expect(r => r.Execute<T>(null)).IgnoreArguments().Return(response);
+            
             var flow = MockRepository.GenerateMock<IAuthenticationFlow>();
             flow.Expect(f => f.Authenticate()).Return(new AuthenticationInfo("access", "url"));
 
