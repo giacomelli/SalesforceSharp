@@ -116,7 +116,9 @@ client.Delete("Account", "<ID">);
 
 FAQ
 -------- 
-Having troubles? Take a look in our wiki [FAQ](https://github.com/giacomelli/SalesforceSharp/wiki/FAQ).
+Having troubles? 
+ - Take a look in our [FAQ](https://github.com/giacomelli/SalesforceSharp/wiki/FAQ).
+ - Ask on [Stack Overflow](http://stackoverflow.com/search?q=SalesforceSharp)
 
 Roadmap
 -------- 
