@@ -2,7 +2,7 @@ SalesforceSharp
 ===============
 [![Build Status](https://travis-ci.org/giacomelli/SalesforceSharp.png?branch=master)](https://travis-ci.org/giacomelli/SalesforceSharp)
 
-An easy to use .NET client library for Salesforce REST API
+An easy-to-use .NET client library for Salesforce REST API
 
 --------
 
@@ -13,6 +13,8 @@ Features
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
+ - Mono support
+ - Fully tested on Windows and MacOSX
  - 100% Unit Tests coveraged 
  - 100% code documentation
  - FxCop validated
