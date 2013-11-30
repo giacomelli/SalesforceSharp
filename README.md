@@ -14,7 +14,7 @@ Features
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
  - Mono support
- - Fully tested on Windows and MacOSX
+ - Fully tested on Windows and OSX
  - 100% Unit Tests coveraged 
  - 100% code documentation
  - FxCop validated
