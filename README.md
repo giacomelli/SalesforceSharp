@@ -112,6 +112,10 @@ client.Delete("Account", "<ID">);
 
 --------
 
+FAQ
+-------- 
+Having troubles? Take a look in our wiki [FAQ](wiki/FAQ).
+
 Roadmap
 -------- 
  - Implements others authentcation flows:
