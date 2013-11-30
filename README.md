@@ -44,7 +44,6 @@ catch(SalesforceException ex)
 {
 	Console.WriteLine("Authentication failed: {0} : {1}", ex.Error, ex.Message);
 }
-
 ```
 
 Querying records
@@ -66,7 +65,6 @@ foreach(var r in records)
 {
 	Console.WriteLine("{0}: {1}", r.Id, r.Name);
 }
-
 ```
 
 Finding a record by Id
@@ -75,7 +73,6 @@ Finding a record by Id
 ```csharp
 
 var record = client.FindById<Account>("Account", "<ID>");
-
 ```
 
 Creating a record
@@ -88,7 +85,6 @@ client.Create("Account", new Account()
 
 // Using an anonymous.
 client.Create("Account", new { Name = "name created", Description = "description created" }));
-
 ```
 
 Updating a record
@@ -101,7 +97,6 @@ client.Update("Account", "<record id>", new Account()
 
 // Using an anonymous. Only required properties will be updated.
 client.Update("Account", "<record id>", new { Description = "description updated" }));
-
 ```
 
 Deleting a record
@@ -109,7 +104,6 @@ Deleting a record
 ```csharp
 
 client.Delete("Account", "<ID">);
-
 ```
 
 --------
@@ -145,5 +139,6 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
+ - 0.6.5 Added ability to use alternate/custom the service end point.
  - 0.6.1 Publish NuGet package.
  - 0.5.0 First version.

@@ -3,6 +3,7 @@ using NUnit.Framework;
 using SalesforceSharp.Security;
 using SalesforceSharp.FunctionalTests.Stubs;
 using TestSharp;
+using HelperSharp;
 
 namespace SalesforceSharp.FunctionalTests
 {
@@ -166,7 +167,7 @@ namespace SalesforceSharp.FunctionalTests
             {
                 target.Create("Contact", record);
             });            
-        }
+		}
         #endregion
 
         #region Update
