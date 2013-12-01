@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.UnitTests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.FunctionalTests", "SalesforceSharp.FunctionalTests\SalesforceSharp.FunctionalTests.csproj", "{276ECE17-1F85-430F-AF1A-68D50B8B9A27}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.NugetTests", "SalesforceSharp.NugetTests\SalesforceSharp.NugetTests.csproj", "{6B85A088-5800-44D2-8E39-8337BB559955}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,11 +34,26 @@ Global
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B85A088-5800-44D2-8E39-8337BB559955}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B85A088-5800-44D2-8E39-8337BB559955}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B85A088-5800-44D2-8E39-8337BB559955}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B85A088-5800-44D2-8E39-8337BB559955}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = SalesforceSharp\SalesforceSharp.csproj
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.FileWidth = 120
+		$1.inheritsSet = VisualStudio
+		$1.inheritsScope = text/plain
+		$1.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $2
+		$2.AfterDelegateDeclarationParameterComma = True
+		$2.inheritsSet = Mono
+		$2.inheritsScope = text/x-csharp
+		$2.scope = text/x-csharp
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

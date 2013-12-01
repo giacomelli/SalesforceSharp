@@ -105,7 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SalesforceSharp\SalesforceSharp.csproj">
-      <Project>{0ea33e69-d046-42af-9bf3-4b0f49eea1d6}</Project>
+      <Project>{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}</Project>
       <Name>SalesforceSharp</Name>
     </ProjectReference>
   </ItemGroup>

@@ -21,42 +21,12 @@ namespace SalesforceSharp
         private IRestClient m_restClient;
         #endregion
 
-        #region Properties
-        /// <summary>
-        /// Gets or sets the API version.
-        /// </summary>
-        /// <remarks>
-        /// The default value is v28.0.
-        /// </remarks>
-        /// <value>
-        /// The API version.
-        /// </value>
-        public string ApiVersion { get; set; }       
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is authenticated.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsAuthenticated { get; private set; }
-
-        /// <summary>
-        /// Gets the instance URL.
-        /// </summary>
-        /// <value>
-        /// The instance URL.
-        /// </value>
-        public string InstanceUrl { get; private set; }
-        #endregion
-
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>        
         public SalesforceClient() : this(new RestClient())
-        {
-           
+        {        
         }
 
         /// <summary>
@@ -70,6 +40,35 @@ namespace SalesforceSharp
             m_deserializer = new DynamicJsonDeserializer();
         }
         #endregion
+		 
+		#region Properties
+		/// <summary>
+		/// Gets or sets the API version.
+		/// </summary>
+		/// <remarks>
+		/// The default value is v28.0.
+		/// </remarks>
+		/// <value>
+		/// The API version.
+		/// </value>
+		public string ApiVersion { get; set; }       
+
+		/// <summary>
+		/// Gets a value indicating whether this instance is authenticated.
+		/// </summary>
+		/// <value>
+		/// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+		/// </value>
+		public bool IsAuthenticated { get; private set; }
+
+		/// <summary>
+		/// Gets the instance URL.
+		/// </summary>
+		/// <value>
+		/// The instance URL.
+		/// </value>
+		public string InstanceUrl { get; private set; }
+		#endregion
 
         #region Methods
         /// <summary>
