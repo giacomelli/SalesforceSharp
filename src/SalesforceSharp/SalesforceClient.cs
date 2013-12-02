@@ -33,7 +33,7 @@ namespace SalesforceSharp
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>
         /// <param name="restClient">The rest client.</param>
-        internal SalesforceClient(IRestClient restClient)
+        protected internal SalesforceClient(IRestClient restClient)
         {
             m_restClient = restClient;
             ApiVersion = "v28.0";
@@ -268,7 +268,7 @@ namespace SalesforceSharp
         /// <param name="record">The record.</param>
         /// <param name="method">The http method.</param>
         /// <exception cref="System.InvalidOperationException">Please, execute Authenticate method before call any REST API operation.</exception>
-        private IRestResponse<T> Request<T>(string baseUrl, string objectName = null, object record = null, Method method = Method.GET) where T : new()
+        protected IRestResponse<T> Request<T>(string baseUrl, string objectName = null, object record = null, Method method = Method.GET) where T : new()
         {
             if (!IsAuthenticated)
             {
@@ -330,7 +330,7 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="recordType">Type of the record.</param>
         /// <returns></returns>
-        private static string GetRecordProjection(Type recordType)
+        protected static string GetRecordProjection(Type recordType)
         {
             return String.Join(", ", recordType.GetProperties().Select(p => p.Name));
         }
@@ -340,12 +340,17 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="resourceName">Name of the resource.</param>
         /// <returns></returns>
-        private string GetUrl(string resourceName)
+        protected string GetUrl(string resourceName)
         {
             return "{0}/services/data/{1}/{2}".With(InstanceUrl, ApiVersion, resourceName);
         }
 
-        private string GetAltUrl(string url)
+        /// <summary>
+        /// Gets URL of use with custom restful endpoint.
+        /// </summary>
+        /// <param name="url">URL of alternate service</param>
+        /// <returns></returns>
+        protected string GetAltUrl(string url)
         {
             return "{0}/{1}".With(InstanceUrl, url);
         }
