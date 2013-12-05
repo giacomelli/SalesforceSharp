@@ -139,6 +139,7 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
+ - 0.6.6 Marked constructor and helper methods as protected to allow extension (http://goo.gl/aPCL4f).
  - 0.6.5 Added ability to use alternate/custom service end-point (http://goo.gl/PddRiW).
  - 0.6.1 Publish NuGet package.
  - 0.5.0 First version.
