@@ -138,6 +138,18 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
+        #region MetaData
+        [Test]
+        public void Test()
+        {
+            var target = CreateClientAndAuth();
+
+            string result = target.GetFieldsAndMetaData("Account");
+
+            Assert.IsNotNullOrEmpty(result);
+        }
+        #endregion
+
         #region Create
         [Test]
         public void Create_ValidRecordWithAnonymous_Created()
