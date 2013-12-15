@@ -140,11 +140,11 @@ namespace SalesforceSharp.FunctionalTests
 
         #region MetaData
         [Test]
-        public void Test()
+        public void Query_FieldMetaData()
         {
             var target = CreateClientAndAuth();
 
-            string result = target.GetFieldsAndMetaData("Account");
+            string result = target.FieldMetaData("Account");
 
             Assert.IsNotNullOrEmpty(result);
         }
