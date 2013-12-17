@@ -138,13 +138,13 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
-        #region MetaData
+        #region ReadMetaData
         [Test]
-        public void Query_FieldMetaData()
+        public void ReadMetaData_WhenCalled_ReturnsData()
         {
             var target = CreateClientAndAuth();
 
-            string result = target.FieldMetaData("Account");
+            string result = target.ReadMetaData("Account");
 
             Assert.IsNotNullOrEmpty(result);
         }

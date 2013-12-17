@@ -148,7 +148,7 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="objectName">The name of the object in Salesforce.</param>
         /// <returns></returns>
-        public string FieldMetaData(string objectName)
+        public string ReadMetaData(string objectName)
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
 
