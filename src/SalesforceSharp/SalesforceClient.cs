@@ -144,6 +144,20 @@ namespace SalesforceSharp
         }
 
         /// <summary>
+        /// Obtains a JSON representation of fields an meta data for a given object type
+        /// </summary>
+        /// <param name="objectName">The name of the object in Salesforce.</param>
+        /// <returns></returns>
+        public string ReadMetaData(string objectName)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+
+            var response = Request<object>(GetUrl("sobjects"), string.Format("{0}/describe/", objectName));
+
+            return response.Content;
+        }
+
+        /// <summary>
         /// Creates a record
         /// </summary>
         /// <param name="objectName">The name of the object in Salesforce.</param>

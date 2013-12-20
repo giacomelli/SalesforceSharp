@@ -138,6 +138,18 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
+        #region ReadMetaData
+        [Test]
+        public void ReadMetaData_WhenCalled_ReturnsData()
+        {
+            var target = CreateClientAndAuth();
+
+            string result = target.ReadMetaData("Account");
+
+            Assert.IsNotNullOrEmpty(result);
+        }
+        #endregion
+
         #region Create
         [Test]
         public void Create_ValidRecordWithAnonymous_Created()
