@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using RestSharp;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
+using RestSharp.Extensions;
 
 namespace SalesforceSharp
 {
@@ -94,13 +95,15 @@ namespace SalesforceSharp
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
             string url;
+			var escapedQuery = query.UrlEncode ();
+
             if (altUrl == string.Empty)
             {
-                url = "{0}?q={1}".With(GetUrl("query"), query);
+				url = "{0}?q={1}".With(GetUrl("query"), escapedQuery);
             }
             else
             {
-                url = "{0}?q={1}".With(GetAltUrl(altUrl), query);
+				url = "{0}?q={1}".With(GetAltUrl(altUrl), escapedQuery);
             }
             var response = Request<SalesforceQueryResult<T>>(url);
 

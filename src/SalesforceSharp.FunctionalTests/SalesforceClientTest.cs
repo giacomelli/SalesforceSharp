@@ -88,7 +88,7 @@ namespace SalesforceSharp.FunctionalTests
         public void Query_ValidQueryWithObject_Result()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name FROM " + TestConfig.ObjectName);
+			var actual = target.Query<RecordStub>("SELECT id, name FROM Account");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
@@ -96,7 +96,22 @@ namespace SalesforceSharp.FunctionalTests
                 Assert.IsNotNullOrEmpty(actual[0].Id);
                 Assert.IsNotNullOrEmpty(actual[0].Name);
             }
+
+			actual = target.Query<RecordStub>("SELECT id, name FROM Account WHERE LastModifiedDate = 2013-12-01T12:00:00+00:00");
+			Assert.IsNotNull(actual);
         }
+
+
+		/// <summary>
+		/// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
+		/// </summary>
+		[Test]
+		public void Query_ValidQueryWithSpecialChars_Result()
+		{
+			var target = CreateClientAndAuth();
+			var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account WHERE LastModifiedDate >= 2013-12-01T12:00:00+00:00");
+			Assert.IsNotNull(actual);
+		}
 
         [Test]
         public void Query_ValidQueryWithObjectWrongPropertyTypes_Exception()
@@ -140,11 +155,11 @@ namespace SalesforceSharp.FunctionalTests
 
         #region ReadMetaData
         [Test]
-        public void ReadMetaData_WhenCalled_ReturnsData()
+		public void ReadMetaData_ValidObjectName_Metadata()
         {
             var target = CreateClientAndAuth();
 
-            string result = target.ReadMetaData("Account");
+			string result = target.ReadMetaData("Account");
 
             Assert.IsNotNullOrEmpty(result);
         }
