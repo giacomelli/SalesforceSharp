@@ -26,8 +26,9 @@ namespace SalesforceSharp
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>        
-        public SalesforceClient() : this(new RestClient())
-        {        
+        public SalesforceClient()
+            : this(new RestClient())
+        {
         }
 
         /// <summary>
@@ -41,35 +42,35 @@ namespace SalesforceSharp
             m_deserializer = new DynamicJsonDeserializer();
         }
         #endregion
-		 
-		#region Properties
-		/// <summary>
-		/// Gets or sets the API version.
-		/// </summary>
-		/// <remarks>
-		/// The default value is v28.0.
-		/// </remarks>
-		/// <value>
-		/// The API version.
-		/// </value>
-		public string ApiVersion { get; set; }       
 
-		/// <summary>
-		/// Gets a value indicating whether this instance is authenticated.
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
-		/// </value>
-		public bool IsAuthenticated { get; private set; }
+        #region Properties
+        /// <summary>
+        /// Gets or sets the API version.
+        /// </summary>
+        /// <remarks>
+        /// The default value is v28.0.
+        /// </remarks>
+        /// <value>
+        /// The API version.
+        /// </value>
+        public string ApiVersion { get; set; }
 
-		/// <summary>
-		/// Gets the instance URL.
-		/// </summary>
-		/// <value>
-		/// The instance URL.
-		/// </value>
-		public string InstanceUrl { get; private set; }
-		#endregion
+        /// <summary>
+        /// Gets a value indicating whether this instance is authenticated.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAuthenticated { get; private set; }
+
+        /// <summary>
+        /// Gets the instance URL.
+        /// </summary>
+        /// <value>
+        /// The instance URL.
+        /// </value>
+        public string InstanceUrl { get; private set; }
+        #endregion
 
         #region Methods
         /// <summary>
@@ -83,7 +84,7 @@ namespace SalesforceSharp
             InstanceUrl = info.InstanceUrl;
             IsAuthenticated = true;
         }
-     
+
         /// <summary>
         /// Executes a SOQL query and returns the result.
         /// </summary>
@@ -95,19 +96,60 @@ namespace SalesforceSharp
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
             string url;
-			var escapedQuery = query.UrlEncode ();
+            var escapedQuery = query.UrlEncode();
 
             if (altUrl == string.Empty)
             {
-				url = "{0}?q={1}".With(GetUrl("query"), escapedQuery);
+                url = "{0}?q={1}".With(GetUrl("query"), escapedQuery);
             }
             else
             {
-				url = "{0}?q={1}".With(GetAltUrl(altUrl), escapedQuery);
+                url = "{0}?q={1}".With(GetAltUrl(altUrl), escapedQuery);
             }
-            var response = Request<SalesforceQueryResult<T>>(url);
 
-            return response.Data.Records;
+            List<T> returns = new List<T>();
+            IRestResponse<SalesforceQueryResult<T>> response = null;
+
+            do
+            {
+                if (response != null)
+                {
+                    url = InstanceUrl + escapeNextRecordUrl(response.Data.NextRecordsUrl);
+                }
+
+                response = Request<SalesforceQueryResult<T>>(url);
+                if (response != null && response.Data != null && response.Data.Records.Any())
+                {
+                    returns.AddRange(response.Data.Records);
+                }
+            } while (response != null && response.Data != null && !response.Data.Done);
+
+            //var response = Request<SalesforceQueryResult<T>>(url);
+
+            return returns;
+        }
+
+        private string escapeNextRecordUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return url;
+            }
+
+            if (url.LastIndexOf("/") < 0)
+            {
+                return url;
+            }
+
+            var escapableString = url.Substring(url.LastIndexOf("/")+1);
+            if (string.IsNullOrEmpty(escapableString))
+            {
+                return url;
+            }
+
+            var unescapableString = url.Substring(0, url.LastIndexOf("/") + 1);
+
+            return unescapableString + escapableString.UrlEncode();
         }
 
         /// <summary>
@@ -183,7 +225,7 @@ namespace SalesforceSharp
         /// <param name="objectName">The name of the object in Salesforce.</param>
         /// <param name="record">The record to be created.</param>
         /// <returns>The Id of created record.</returns>
-        public string Create(string objectName, object record) 
+        public string Create(string objectName, object record)
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
             ExceptionHelper.ThrowIfNull("record", record);
@@ -229,8 +271,8 @@ namespace SalesforceSharp
             var response = Request<object>(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
-            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;                   
-            
+            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;
+
             return recordUpdated;
         }
 

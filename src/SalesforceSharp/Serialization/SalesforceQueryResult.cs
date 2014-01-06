@@ -15,5 +15,9 @@ namespace SalesforceSharp.Serialization
         /// The records.
         /// </value>
         public List<TRecord> Records { get; set; }
+
+        public int TotalSize { get; set; }
+        public bool Done { get; set; }
+        public string NextRecordsUrl { get; set; }
     }
 }
