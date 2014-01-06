@@ -122,10 +122,8 @@ namespace SalesforceSharp
                 {
                     returns.AddRange(response.Data.Records);
                 }
-            } while (response != null && response.Data != null && !response.Data.Done);
-
-            //var response = Request<SalesforceQueryResult<T>>(url);
-
+            } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl) );
+            
             return returns;
         }
 
