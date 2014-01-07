@@ -3,7 +3,6 @@ using NUnit.Framework;
 using SalesforceSharp.Security;
 using SalesforceSharp.FunctionalTests.Stubs;
 using TestSharp;
-using HelperSharp;
 
 namespace SalesforceSharp.FunctionalTests
 {
@@ -18,7 +17,7 @@ namespace SalesforceSharp.FunctionalTests
 
             ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.AuthenticationFailure, "authentication failure"), () =>
             {
-                target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret,  "invalid user name", TestConfig.Password));
+                target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, "invalid user name", TestConfig.Password));
             });
 
             Assert.IsFalse(target.IsAuthenticated);
@@ -62,7 +61,7 @@ namespace SalesforceSharp.FunctionalTests
 
             Assert.IsFalse(target.IsAuthenticated);
         }
-    
+
         [Test]
         public void Authenticate_ValidCredentials_Authenticated()
         {
@@ -70,7 +69,7 @@ namespace SalesforceSharp.FunctionalTests
             target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, TestConfig.Password));
             Assert.IsTrue(target.IsAuthenticated);
         }
-        #endregion    
+        #endregion
 
         #region Query
         [Test]
@@ -81,14 +80,14 @@ namespace SalesforceSharp.FunctionalTests
             ExceptionAssert.IsThrowing(typeof(SalesforceException), () =>
             {
                 target.Query<RecordStub>("SELECT id, name, FROM " + TestConfig.ObjectName);
-            });            
+            });
         }
 
         [Test]
         public void Query_ValidQueryWithObject_Result()
         {
             var target = CreateClientAndAuth();
-			var actual = target.Query<RecordStub>("SELECT id, name FROM Account");
+            var actual = target.Query<RecordStub>("SELECT id, name FROM Account");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
@@ -97,21 +96,21 @@ namespace SalesforceSharp.FunctionalTests
                 Assert.IsNotNullOrEmpty(actual[0].Name);
             }
 
-			actual = target.Query<RecordStub>("SELECT id, name FROM Account WHERE LastModifiedDate = 2013-12-01T12:00:00+00:00");
-			Assert.IsNotNull(actual);
+            actual = target.Query<RecordStub>("SELECT id, name FROM Account WHERE LastModifiedDate = 2013-12-01T12:00:00+00:00");
+            Assert.IsNotNull(actual);
         }
 
 
-		/// <summary>
-		/// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
-		/// </summary>
-		[Test]
-		public void Query_ValidQueryWithSpecialChars_Result()
-		{
-			var target = CreateClientAndAuth();
-			var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account WHERE LastModifiedDate >= 2013-12-01T12:00:00+00:00");
-			Assert.IsNotNull(actual);
-		}
+        /// <summary>
+        /// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
+        /// </summary>
+        [Test]
+        public void Query_ValidQueryWithSpecialChars_Result()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account WHERE LastModifiedDate >= 2013-12-01T12:00:00+00:00");
+            Assert.IsNotNull(actual);
+        }
 
         [Test]
         public void Query_ValidQueryWithObjectWrongPropertyTypes_Exception()
@@ -122,8 +121,29 @@ namespace SalesforceSharp.FunctionalTests
             {
                 target.Query<WrongRecordStub>("SELECT IsDeleted FROM Account");
             });
-            
+
         }
+        #endregion
+
+        #region
+        [Test]
+        public void PagableQuery_With_QueryString_Returns_Result()
+        {
+            var target = CreateClientAndAuth();
+            var queryString = "SELECT id, name, description ";
+            queryString += " FROM Account";
+
+            var totalRecords = 0;
+
+            var actual = target.QueryActionBatch<RecordStub>(queryString, s =>
+                {
+                    totalRecords += s.Count;
+                });
+
+            Assert.IsNotNull(totalRecords);
+            Assert.AreNotEqual(0, totalRecords);
+        }
+
         #endregion
 
         #region FindById
@@ -131,7 +151,7 @@ namespace SalesforceSharp.FunctionalTests
         public void FindById_NotExistingID_Null()
         {
             var target = CreateClientAndAuth();
-            Assert.IsNull(target.FindById<RecordStub>("Contact", "003i000000K2BP0AAM"));            
+            Assert.IsNull(target.FindById<RecordStub>("Contact", "003i000000K2BP0AAM"));
         }
 
         [Test]
@@ -155,11 +175,11 @@ namespace SalesforceSharp.FunctionalTests
 
         #region ReadMetaData
         [Test]
-		public void ReadMetaData_ValidObjectName_Metadata()
+        public void ReadMetaData_ValidObjectName_Metadata()
         {
             var target = CreateClientAndAuth();
 
-			string result = target.ReadMetaData("Account");
+            string result = target.ReadMetaData("Account");
 
             Assert.IsNotNullOrEmpty(result);
         }
@@ -170,7 +190,7 @@ namespace SalesforceSharp.FunctionalTests
         public void Create_ValidRecordWithAnonymous_Created()
         {
             var target = CreateClientAndAuth();
-            var record = new 
+            var record = new
             {
                 FirstName = "Name " + DateTime.Now.Ticks,
                 LastName = "Last name"
@@ -193,8 +213,8 @@ namespace SalesforceSharp.FunctionalTests
             ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidField, "No such column 'FirstName1' on sobject of type Contact"), () =>
             {
                 target.Create("Contact", record);
-            });            
-		}
+            });
+        }
         #endregion
 
         #region Update
@@ -202,9 +222,10 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_InvalidId_Exception()
         {
             var target = CreateClientAndAuth();
-            
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.NotFound, "Provided external ID field does not exist or is not accessible: INVALID ID"), () => {
-                target.Update(TestConfig.ObjectName, "INVALID ID", new { Name = "TEST" });            
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.NotFound, "Provided external ID field does not exist or is not accessible: INVALID ID"), () =>
+            {
+                target.Update(TestConfig.ObjectName, "INVALID ID", new { Name = "TEST" });
             });
         }
 
@@ -214,7 +235,7 @@ namespace SalesforceSharp.FunctionalTests
             var target = CreateClientAndAuth();
             var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
             Assert.IsNotNull(actual);
-            
+
             if (actual.Count > 0)
             {
                 Assert.IsTrue(target.Update("Account", actual[0].Id, new { Description = DateTime.Now + " UPDATED" }));
@@ -230,7 +251,7 @@ namespace SalesforceSharp.FunctionalTests
 
             if (actual.Count > 0)
             {
-                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub {Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
+                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub { Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
             }
         }
 
@@ -314,18 +335,18 @@ namespace SalesforceSharp.FunctionalTests
         }
 
         private SalesforceClient CreateClientAndAuth(
-            string clientId, 
-            string clientSecret, 
-            string username, 
+            string clientId,
+            string clientSecret,
+            string username,
             string password)
         {
             var client = new SalesforceClient();
-            var authenticationFlow = CreateAuthenticationFlow(clientId, clientSecret, username, password);            
+            var authenticationFlow = CreateAuthenticationFlow(clientId, clientSecret, username, password);
 
             client.Authenticate(authenticationFlow);
 
             return client;
-        }        
+        }
         #endregion
     }
 }
