@@ -95,26 +95,23 @@ namespace SalesforceSharp
         {
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
-            string url;
             var escapedQuery = query.UrlEncode();
 
-            if (altUrl == string.Empty)
-            {
-                url = "{0}?q={1}".With(GetUrl("query"), escapedQuery);
-            }
-            else
-            {
-                url = "{0}?q={1}".With(GetAltUrl(altUrl), escapedQuery);
-            }
+            var url = "{0}?q={1}".With(altUrl == string.Empty ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
 
-            List<T> returns = new List<T>();
+            var returns = new List<T>();
             IRestResponse<SalesforceQueryResult<T>> response = null;
 
             do
             {
                 if (response != null)
                 {
-                    url = InstanceUrl + escapeNextRecordUrl(response.Data.NextRecordsUrl);
+                    url = getNextRecordsUrl(response);
+                }
+
+                if (string.IsNullOrEmpty(url))
+                {
+                    break;
                 }
 
                 response = Request<SalesforceQueryResult<T>>(url);
@@ -127,28 +124,55 @@ namespace SalesforceSharp
             return returns;
         }
 
-        private string escapeNextRecordUrl(string url)
+        private string getNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
         {
+            if (previousResponse == null || previousResponse.Data == null ||
+                string.IsNullOrEmpty(previousResponse.Data.NextRecordsUrl))
+            {
+                return string.Empty;
+            }
+            return  InstanceUrl + previousResponse.Data.NextRecordsUrl;
+
+        }
+
+        /// <summary>
+        /// Query that will return the whole request.  With this we can process data from returned query and then get the next batch from SalesForce
+        /// </summary>
+        /// <typeparam name="T">Salesforce class</typeparam>
+        /// <param name="query">The SOQL query.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The whole rest response object</returns>
+        public QueryRequestResponse<SalesforceQueryResult<T>> PagableQuery<T>(string query, string altUrl) where T : new()
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("query", query);
+
+            var escapedQuery = query.UrlEncode();
+
+            var url = "{0}?q={1}".With(altUrl == string.Empty ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
+
+            var response = Request<SalesforceQueryResult<T>>(url);
+
+            return new QueryRequestResponse<SalesforceQueryResult<T>>(response);
+        }
+        /// <summary>
+        /// Query that will return the whole request.  With this we can process data from returned query and then get the next batch from SalesForce using previous reponse.
+        /// </summary>
+        /// <typeparam name="T">SalesForce Class</typeparam>
+        /// <param name="previousResponse">Previous response</param>
+        /// <returns>The whole rest response object</returns>
+        public QueryRequestResponse<SalesforceQueryResult<T>> PagableQuery<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T : new()
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("previousResponse", "previous response is empty.  No known NextRecordsURL");
+
+            var url = getNextRecordsUrl(previousResponse);
             if (string.IsNullOrEmpty(url))
             {
-                return url;
+                return null;
             }
 
-            if (url.LastIndexOf("/") < 0)
-            {
-                return url;
-            }
-
-            var escapableString = url.Substring(url.LastIndexOf("/")+1);
-            if (string.IsNullOrEmpty(escapableString))
-            {
-                return url;
-            }
-
-            var unescapableString = url.Substring(0, url.LastIndexOf("/") + 1);
-
-            return unescapableString + escapableString.UrlEncode();
-        }
+            var response = Request<SalesforceQueryResult<T>>(url);
+            return new QueryRequestResponse<SalesforceQueryResult<T>>(response);
+        } 
 
         /// <summary>
         /// Finds a record by Id.
