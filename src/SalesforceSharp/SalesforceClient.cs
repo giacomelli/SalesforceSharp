@@ -93,6 +93,21 @@ namespace SalesforceSharp
         /// <returns>The API result for the query.</returns>
         public IList<T> Query<T>(string query, string altUrl = "") where T : new()
         {
+            return QueryActionBatch<T>(query, s => { }, altUrl);
+        }
+
+
+        /// <summary>
+        /// Executes a SOQL query and returns the result.
+        /// </summary>
+        /// <param name="query">The SOQL query.</param>
+        /// <param name="action">Action to call after getting a non error response.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The API result for the query.</returns>
+        public IList<T> QueryActionBatch<T>(string query, Action<IList<T>> action, string altUrl = "") where T : new()
+        {
+            if (action == null) throw new ArgumentNullException("action");
+
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
             var escapedQuery = query.UrlEncode();
@@ -107,6 +122,7 @@ namespace SalesforceSharp
                 if (response != null)
                 {
                     url = getNextRecordsUrl(response);
+                    response = null;
                 }
 
                 if (string.IsNullOrEmpty(url))
@@ -115,14 +131,20 @@ namespace SalesforceSharp
                 }
 
                 response = Request<SalesforceQueryResult<T>>(url);
-                if (response != null && response.Data != null && response.Data.Records.Any())
+                if (response != null && response.Data != null)
                 {
-                    returns.AddRange(response.Data.Records);
+                    if (response.Data.Records.Any())
+                    {
+                        action(response.Data.Records);
+                        returns.AddRange(response.Data.Records);
+                    }
                 }
-            } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl) );
-            
+                
+            } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl));
+
             return returns;
         }
+
 
         private string getNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
         {
@@ -134,45 +156,6 @@ namespace SalesforceSharp
             return  InstanceUrl + previousResponse.Data.NextRecordsUrl;
 
         }
-
-        /// <summary>
-        /// Query that will return the whole request.  With this we can process data from returned query and then get the next batch from SalesForce
-        /// </summary>
-        /// <typeparam name="T">Salesforce class</typeparam>
-        /// <param name="query">The SOQL query.</param>
-        /// <param name="altUrl">The url to use without the instance url</param>
-        /// <returns>The whole rest response object</returns>
-        public QueryRequestResponse<SalesforceQueryResult<T>> PagableQuery<T>(string query, string altUrl) where T : new()
-        {
-            ExceptionHelper.ThrowIfNullOrEmpty("query", query);
-
-            var escapedQuery = query.UrlEncode();
-
-            var url = "{0}?q={1}".With(altUrl == string.Empty ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
-
-            var response = Request<SalesforceQueryResult<T>>(url);
-
-            return new QueryRequestResponse<SalesforceQueryResult<T>>(response);
-        }
-        /// <summary>
-        /// Query that will return the whole request.  With this we can process data from returned query and then get the next batch from SalesForce using previous reponse.
-        /// </summary>
-        /// <typeparam name="T">SalesForce Class</typeparam>
-        /// <param name="previousResponse">Previous response</param>
-        /// <returns>The whole rest response object</returns>
-        public QueryRequestResponse<SalesforceQueryResult<T>> PagableQuery<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T : new()
-        {
-            ExceptionHelper.ThrowIfNullOrEmpty("previousResponse", "previous response is empty.  No known NextRecordsURL");
-
-            var url = getNextRecordsUrl(previousResponse);
-            if (string.IsNullOrEmpty(url))
-            {
-                return null;
-            }
-
-            var response = Request<SalesforceQueryResult<T>>(url);
-            return new QueryRequestResponse<SalesforceQueryResult<T>>(response);
-        } 
 
         /// <summary>
         /// Finds a record by Id.
