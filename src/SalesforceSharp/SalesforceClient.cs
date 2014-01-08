@@ -121,7 +121,7 @@ namespace SalesforceSharp
             {
                 if (response != null)
                 {
-                    url = getNextRecordsUrl(response);
+                    url = GetNextRecordsUrl(response);
                     response = null;
                 }
 
@@ -146,7 +146,7 @@ namespace SalesforceSharp
         }
 
 
-        private string getNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
+        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
         {
             if (previousResponse == null || previousResponse.Data == null ||
                 string.IsNullOrEmpty(previousResponse.Data.NextRecordsUrl))

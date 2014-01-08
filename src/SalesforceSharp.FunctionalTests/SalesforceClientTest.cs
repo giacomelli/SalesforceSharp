@@ -127,7 +127,7 @@ namespace SalesforceSharp.FunctionalTests
 
         #region
         [Test]
-        public void PagableQuery_With_QueryString_Returns_Result()
+        public void QueryActionBatch_ValidQuery_AllRecords()
         {
             var target = CreateClientAndAuth();
             var queryString = "SELECT id, name, description ";
