@@ -127,6 +127,8 @@ How to improve it?
 
 Create a fork of [SalesforceSharp](https://github.com/giacomelli/SalesforceSharp/fork). 
 
+Follow our [develoment guidelines](https://github.com/giacomelli/SalesforceSharp/wiki/Development-Guidelines).
+
 Did you change it? [Submit a pull request](https://github.com/giacomelli/SalesforceSharp/pull/new/master).
 
 
