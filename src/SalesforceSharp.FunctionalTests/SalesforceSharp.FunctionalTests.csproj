@@ -52,6 +52,7 @@
     <Compile Include="Stubs\RecordStub.cs" />
     <Compile Include="Stubs\WrongRecordStub.cs" />
     <Compile Include="TestConfig.cs" />
+    <Compile Include="Stubs\ContactStubWithFields.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">

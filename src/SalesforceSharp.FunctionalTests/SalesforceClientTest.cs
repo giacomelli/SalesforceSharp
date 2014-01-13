@@ -112,6 +112,31 @@ namespace SalesforceSharp.FunctionalTests
             Assert.IsNotNull(actual);
         }
 
+		/// <summary>
+		/// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/6.
+		/// </summary>
+		[Test]
+		public void Query_ValidQueryClassWithFields_ResultNoFieldsBind()
+		{
+			var target = CreateClientAndAuth();
+
+			// Public FIELDS are not supported.
+			var actual1 = target.Query<ContactStubWithFields>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
+			Assert.AreEqual(1, actual1.Count);
+
+			var first1 = actual1 [0];
+			TextAssert.IsNullOrEmpty (first1.Id);
+			TextAssert.IsNullOrEmpty (first1.Name);
+		
+			// Public PROPERTIES are supported.
+			var actual2 = target.Query<ContactStub>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
+			Assert.AreEqual(1, actual2.Count);
+
+			var first2 = actual2 [0];
+			TextAssert.IsNotNullOrEmpty (first2.Id);
+			TextAssert.IsNotNullOrEmpty (first2.Name);
+		}
+
         [Test]
         public void Query_ValidQueryWithObjectWrongPropertyTypes_Exception()
         {
@@ -136,12 +161,13 @@ namespace SalesforceSharp.FunctionalTests
             var totalRecords = 0;
 
             var actual = target.QueryActionBatch<RecordStub>(queryString, s =>
-                {
-                    totalRecords += s.Count;
-                });
+            {
+                totalRecords += s.Count;
+            });
 
             Assert.IsNotNull(totalRecords);
             Assert.AreNotEqual(0, totalRecords);
+			Assert.AreEqual (totalRecords, actual.Count);
         }
 
         #endregion

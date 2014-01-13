@@ -88,6 +88,7 @@ namespace SalesforceSharp
         /// <summary>
         /// Executes a SOQL query and returns the result.
         /// </summary>
+		/// <typeparam name="T">The type of the record. Only public properties will receive the data.</typeparam>
         /// <param name="query">The SOQL query.</param>
         /// <param name="altUrl">The url to use without the instance url</param>
         /// <returns>The API result for the query.</returns>
