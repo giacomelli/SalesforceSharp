@@ -73,8 +73,11 @@ namespace SalesforceSharp
         public string InstanceUrl { get; private set; }
 
         /// <summary>
-        /// Gets or sets extra request headers.
+        /// Gets extra request headers.
         /// </summary>
+        /// <remarks>
+        /// The default is an empty dictionary.
+        /// </remarks>
         public IDictionary<string, string> Headers { get; private set; }
         #endregion
 
