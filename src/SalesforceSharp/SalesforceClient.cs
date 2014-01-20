@@ -40,6 +40,7 @@ namespace SalesforceSharp
             m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
+            Headers = new Dictionary<string, string>();
         }
         #endregion
 
@@ -70,6 +71,11 @@ namespace SalesforceSharp
         /// The instance URL.
         /// </value>
         public string InstanceUrl { get; private set; }
+
+        /// <summary>
+        /// Gets or sets extra request headers.
+        /// </summary>
+        public IDictionary<string, string> Headers { get; private set; }
         #endregion
 
         #region Methods
@@ -345,6 +351,11 @@ namespace SalesforceSharp
             request.RequestFormat = DataFormat.Json;
             request.Method = method;
             request.AddHeader("Authorization", "Bearer " + m_accessToken);
+
+            foreach (var pair in Headers)
+            {
+                request.AddHeader(pair.Key, pair.Value);
+            }
 
             if (record != null)
             {
