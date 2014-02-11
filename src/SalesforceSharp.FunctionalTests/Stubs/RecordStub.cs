@@ -13,8 +13,8 @@ namespace SalesforceSharp.FunctionalTests.Stubs
         public string Name { get; set; }
         public string Description { get; set; }
 
-        [JsonProperty("FirstName")]
-        public string FirstNameCustom { get; set; }
+        [JsonProperty("Phone")]
+        public string PhoneCustom { get; set; }
     }
 }
 

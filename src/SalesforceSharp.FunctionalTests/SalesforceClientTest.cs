@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using NUnit.Framework;
 using SalesforceSharp.Security;
 using SalesforceSharp.FunctionalTests.Stubs;
@@ -105,14 +106,15 @@ namespace SalesforceSharp.FunctionalTests
         public void Query_ValidQueryWithJsonAttributeObject_Result()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, FirstName FROM Contact where FirstName != '' LIMIT 3 ");
+            var actual = target.QueryActionBatch<RecordStub>("SELECT  id, name, Phone from Account where Phone != '' LIMIT 3 ",
+                (a) => { });
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
             {
                 Assert.IsNotNullOrEmpty(actual[0].Id);
                 Assert.IsNotNullOrEmpty(actual[0].Name);
-                Assert.IsNotNullOrEmpty(actual[0].FirstNameCustom);
+                Assert.IsNotNullOrEmpty(actual[0].PhoneCustom);
             }
         }
 
@@ -261,12 +263,12 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_ValidRecordWithClass_Updated()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
+            var actual = target.Query<RecordStub>("SELECT id, name, Phone, description FROM Account");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
             {
-                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub { Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
+                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub {Name = actual[0].Name, PhoneCustom = actual[0].PhoneCustom, Description = DateTime.Now + " UPDATED" }));
             }
         }
 
@@ -335,6 +337,18 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
+        #region ClassHelper
+
+        [Test]
+        public void GetRecordProjection_Result()
+        {
+            var jSonPropertyString = SalesforceClient.GetRecordProjection(typeof(TestJson));
+            Assert.IsTrue(jSonPropertyString.Contains("Id"));
+            Assert.IsTrue(jSonPropertyString.Contains("JsonName"));
+            Assert.IsFalse(jSonPropertyString.Contains("JsonIgnoreMe"));
+        }
+        #endregion
+
         #region Helpers
         private SalesforceClient CreateClientAndAuth()
         {
@@ -362,6 +376,16 @@ namespace SalesforceSharp.FunctionalTests
 
             return client;
         }
+        
+        public class TestJson
+        {
+            public int Id { get; set; }
+            [JsonIgnore]
+            public string JsonIgnoreMe { get; set; }
+            [JsonProperty("JsonName")]
+            public string JsonRenameMe { get; set; }
+        }
         #endregion
+
     }
 }

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using HelperSharp;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
@@ -21,6 +23,7 @@ namespace SalesforceSharp
         private DynamicJsonDeserializer m_deserializer;
         private IRestClient m_restClient;
         private GenericJsonDeserializer genericJsonDeserializer;
+        private GenericJsonSerializer genericJsonSerializer;
         #endregion
 
         #region Constructors
@@ -42,6 +45,7 @@ namespace SalesforceSharp
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
             genericJsonDeserializer = new GenericJsonDeserializer();
+            genericJsonSerializer = new GenericJsonSerializer();
         }
         #endregion
 
@@ -349,7 +353,7 @@ namespace SalesforceSharp
 
             if (record != null)
             {
-                request.AddBody(record);
+                request.AddParameter("application/json; charset=utf-8", genericJsonSerializer.Serialize(record), ParameterType.RequestBody);
             }
 
             var response = m_restClient.Execute<T>(request);
@@ -385,7 +389,8 @@ namespace SalesforceSharp
 
             if (response.ErrorException != null)
             {
-                throw response.ErrorException;
+                var ex = new FormatException(string.Format("{0}{1}{2}", response.ErrorException.Message, Environment.NewLine, response.Content));
+                throw ex;
             }
         }
         #endregion
@@ -396,9 +401,32 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="recordType">Type of the record.</param>
         /// <returns></returns>
-        protected static string GetRecordProjection(Type recordType)
+        public static string GetRecordProjection(Type recordType)
         {
-            return String.Join(", ", recordType.GetProperties().Select(p => p.Name));
+            var propNames = new List<string>();
+
+            var props = recordType.GetProperties();
+            foreach (var prop in props)
+            {
+                // If Ignore then we shouldn't include it.
+                if (prop.GetCustomAttributes(typeof(JsonIgnoreAttribute), true).Any())
+                {
+                    continue;
+                }
+                var attrs = prop.GetCustomAttributes(true);
+                var attr = prop.GetCustomAttributes(typeof(JsonPropertyAttribute), true).FirstOrDefault();
+                // if it doesn't have JsonProperty and we fall back to property name.
+                if (attr != null)
+                {
+                    var jpAttr = attr as JsonPropertyAttribute;
+                    propNames.Add(jpAttr.PropertyName);
+                    continue;
+                }
+
+                propNames.Add(prop.Name);
+            }
+
+            return String.Join(", ", propNames);
         }
 
         /// <summary>
