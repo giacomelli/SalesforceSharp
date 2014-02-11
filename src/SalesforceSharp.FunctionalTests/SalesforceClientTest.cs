@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using NUnit.Framework;
 using SalesforceSharp.Security;
 using SalesforceSharp.FunctionalTests.Stubs;
+using SalesforceSharp.Serialization.SalesForceAttributes;
 using TestSharp;
 
 namespace SalesforceSharp.FunctionalTests
@@ -263,12 +264,12 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_ValidRecordWithClass_Updated()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, Phone, description FROM Account");
+            var actual = target.Query<RecordStub>("SELECT id, name, Phone, FirstName, LastName, description FROM Contact");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
             {
-                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub {Name = actual[0].Name, PhoneCustom = actual[0].PhoneCustom, Description = DateTime.Now + " UPDATED" }));
+                Assert.IsTrue(target.Update("Contact", actual[0].Id, new RecordStub { FirstName = actual[0].FirstName, LastName  = actual[0].LastName, PhoneCustom = actual[0].PhoneCustom, Description = DateTime.Now + " UPDATED" }));
             }
         }
 
@@ -380,7 +381,7 @@ namespace SalesforceSharp.FunctionalTests
         public class TestJson
         {
             public int Id { get; set; }
-            [JsonIgnore]
+            [SalesForce(Ignore = true)]
             public string JsonIgnoreMe { get; set; }
             [JsonProperty("JsonName")]
             public string JsonRenameMe { get; set; }

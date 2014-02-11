@@ -10,6 +10,7 @@ using RestSharp;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
 using RestSharp.Extensions;
+using SalesforceSharp.Serialization.SalesForceAttributes;
 
 namespace SalesforceSharp
 {
@@ -23,7 +24,7 @@ namespace SalesforceSharp
         private DynamicJsonDeserializer m_deserializer;
         private IRestClient m_restClient;
         private GenericJsonDeserializer genericJsonDeserializer;
-        private GenericJsonSerializer genericJsonSerializer;
+        private GenericJsonSerializer updateJsonSerializer;
         #endregion
 
         #region Constructors
@@ -45,7 +46,7 @@ namespace SalesforceSharp
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
             genericJsonDeserializer = new GenericJsonDeserializer();
-            genericJsonSerializer = new GenericJsonSerializer();
+            updateJsonSerializer = new GenericJsonSerializer(new SalesForceContractResolver(true));
         }
         #endregion
 
@@ -353,7 +354,7 @@ namespace SalesforceSharp
 
             if (record != null)
             {
-                request.AddParameter("application/json; charset=utf-8", genericJsonSerializer.Serialize(record), ParameterType.RequestBody);
+                request.AddParameter("application/json; charset=utf-8", updateJsonSerializer.Serialize(record), ParameterType.RequestBody);
             }
 
             var response = m_restClient.Execute<T>(request);
@@ -408,12 +409,20 @@ namespace SalesforceSharp
             var props = recordType.GetProperties();
             foreach (var prop in props)
             {
+                var sfAttrs = prop.GetCustomAttributes(typeof (SalesForceAttribute), true);
                 // If Ignore then we shouldn't include it.
-                if (prop.GetCustomAttributes(typeof(JsonIgnoreAttribute), true).Any())
+                if (sfAttrs.Any())
                 {
-                    continue;
+                    var sfAttr = sfAttrs.FirstOrDefault() as SalesForceAttribute;
+                    if (sfAttr != null)
+                    {
+                        if (sfAttr.Ignore)
+                        {
+                            continue;
+                        }
+                    }
                 }
-                var attrs = prop.GetCustomAttributes(true);
+
                 var attr = prop.GetCustomAttributes(typeof(JsonPropertyAttribute), true).FirstOrDefault();
                 // if it doesn't have JsonProperty and we fall back to property name.
                 if (attr != null)

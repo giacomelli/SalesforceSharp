@@ -67,6 +67,8 @@
     <Compile Include="Serialization\DynamicJsonDeserializer.cs" />
     <Compile Include="Serialization\GenericJsonDeserializer.cs" />
     <Compile Include="Serialization\GenericJsonSerializer.cs" />
+    <Compile Include="Serialization\SalesForceAttributes\SalesForceAttribute.cs" />
+    <Compile Include="Serialization\SalesForceContractResolver.cs" />
     <Compile Include="Serialization\SalesforceQueryResult.cs" />
   </ItemGroup>
   <ItemGroup>
