@@ -119,7 +119,7 @@ namespace SalesforceSharp
 
             var escapedQuery = query.UrlEncode();
 
-            var url = "{0}?q={1}".With(altUrl == string.Empty ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
+            var url = "{0}?q={1}".With(string.IsNullOrEmpty(altUrl) ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
 
             var returns = new List<T>();
             IRestResponse<SalesforceQueryResult<T>> response = null;
