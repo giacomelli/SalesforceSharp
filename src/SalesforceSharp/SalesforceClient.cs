@@ -20,6 +20,7 @@ namespace SalesforceSharp
         private string m_accessToken;
         private DynamicJsonDeserializer m_deserializer;
         private IRestClient m_restClient;
+        private GenericJsonDeserializer genericJsonDeserializer;
         #endregion
 
         #region Constructors
@@ -40,6 +41,7 @@ namespace SalesforceSharp
             m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
+            genericJsonDeserializer = new GenericJsonDeserializer();
         }
         #endregion
 
@@ -131,29 +133,29 @@ namespace SalesforceSharp
                 }
 
                 response = Request<SalesforceQueryResult<T>>(url);
-                if (response != null && response.Data != null)
-                {
-                    if (response.Data.Records.Any())
-                    {
-                        action(response.Data.Records);
-                        returns.AddRange(response.Data.Records);
-                    }
-                }
-                
+                if (response == null || response.Data == null) continue;
+
+                if (!response.Data.Records.Any()) continue;
+                var customResponse = genericJsonDeserializer.Deserialize<SalesforceQueryResult<T>>(response);
+
+                if (customResponse == null) continue;
+                action(customResponse.Records);
+                returns.AddRange(customResponse.Records);
+
             } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl));
 
             return returns;
         }
 
 
-        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
+        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T : new()
         {
             if (previousResponse == null || previousResponse.Data == null ||
                 string.IsNullOrEmpty(previousResponse.Data.NextRecordsUrl))
             {
                 return string.Empty;
             }
-            return  InstanceUrl + previousResponse.Data.NextRecordsUrl;
+            return InstanceUrl + previousResponse.Data.NextRecordsUrl;
 
         }
 

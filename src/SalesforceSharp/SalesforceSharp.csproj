@@ -65,6 +65,7 @@
     <Compile Include="Security\IAuthenticationFlow.cs" />
     <Compile Include="Security\UsernamePasswordAuthenticationFlow.cs" />
     <Compile Include="Serialization\DynamicJsonDeserializer.cs" />
+    <Compile Include="Serialization\GenericJsonDeserializer.cs" />
     <Compile Include="Serialization\SalesforceQueryResult.cs" />
   </ItemGroup>
   <ItemGroup>
