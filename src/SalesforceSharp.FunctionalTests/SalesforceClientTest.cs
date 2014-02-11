@@ -101,6 +101,21 @@ namespace SalesforceSharp.FunctionalTests
         }
 
 
+        [Test]
+        public void Query_ValidQueryWithJsonAttributeObject_Result()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.Query<RecordStub>("SELECT id, name, FirstName FROM Contact where FirstName != '' LIMIT 3 ");
+            Assert.IsNotNull(actual);
+
+            if (actual.Count > 0)
+            {
+                Assert.IsNotNullOrEmpty(actual[0].Id);
+                Assert.IsNotNullOrEmpty(actual[0].Name);
+                Assert.IsNotNullOrEmpty(actual[0].FirstNameCustom);
+            }
+        }
+
         /// <summary>
         /// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
         /// </summary>
