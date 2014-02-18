@@ -377,7 +377,7 @@ namespace SalesforceSharp.UnitTests
             var target = new SalesforceClient(restClient);
             target.Authenticate(flow);
 
-            ExceptionAssert.IsThrowing(new Exception("TESTE"), () =>
+            ExceptionAssert.IsThrowing(new FormatException("TESTE"+ Environment.NewLine), () =>
             {
                 target.Update("TESTE", "TESTE", "TESTE");
             });

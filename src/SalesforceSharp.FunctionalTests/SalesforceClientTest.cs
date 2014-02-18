@@ -135,7 +135,7 @@ namespace SalesforceSharp.FunctionalTests
         {
             var target = CreateClientAndAuth();
 
-            ExceptionAssert.IsThrowing(typeof(FormatException), () =>
+            ExceptionAssert.IsThrowing(typeof(JsonReaderException), () =>
             {
                 target.Query<WrongRecordStub>("SELECT IsDeleted FROM Account");
             });
@@ -264,7 +264,7 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_ValidRecordWithClass_Updated()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, Phone, FirstName, LastName, description FROM Contact");
+            var actual = target.Query<RecordStub>("SELECT id, name, Phone, FirstName, LastName, description FROM Contact LIMIT 10");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
@@ -383,7 +383,7 @@ namespace SalesforceSharp.FunctionalTests
             public int Id { get; set; }
             [SalesForce(Ignore = true)]
             public string JsonIgnoreMe { get; set; }
-            [JsonProperty("JsonName")]
+            [SalesForce(FieldName = "JsonName")]
             public string JsonRenameMe { get; set; }
         }
         #endregion

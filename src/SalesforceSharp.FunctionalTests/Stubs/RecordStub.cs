@@ -15,7 +15,7 @@ namespace SalesforceSharp.FunctionalTests.Stubs
         public string Name { get; set; }
         public string Description { get; set; }
 
-        [JsonProperty("Phone")]
+        [SalesForce(FieldName = "Phone")]
         public string PhoneCustom { get; set; }
 
         public string FirstName { get; set; }
