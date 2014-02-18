@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using SalesforceSharp.Serialization.SalesForceAttributes;
@@ -12,18 +13,19 @@ namespace SalesforceSharp.Serialization
     /// </summary>
     public class SalesForceContractResolver : DefaultContractResolver
     {
-        private readonly bool update;
+        private bool updateResolver;
 
         /// <summary>
-        /// 
+        /// This Resolver will extract the correct salesforce FieldName/ApiName
         /// </summary>
-        /// <param name="update"></param>
-        public SalesForceContractResolver(bool update)
+        /// <param name="updateResolver"></param>
+        public SalesForceContractResolver(bool updateResolver)
         {
-            this.update = update;
+            this.updateResolver = updateResolver;
         }
+
         /// <summary>
-        /// 
+        /// Create a list of JsonProperties of the members in the type.
         /// </summary>
         /// <param name="type"></param>
         /// <param name="memberSerialization"></param>
@@ -31,39 +33,48 @@ namespace SalesforceSharp.Serialization
         protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
         {
             var properties = base.CreateProperties(type, memberSerialization);
-            
-            var ignoreProps = type.GetProperties().Where(x =>
-            {
-                var sfAttrs = x.GetCustomAttributes(typeof(SalesForceAttribute), true);
-                // if there are no attr then definitely include by default
-                if (!sfAttrs.Any())
-                {
-                    return false;
-                }
 
-                var sfAttr = sfAttrs.FirstOrDefault() as SalesForceAttribute;
-                // it should be of type SalesForceAttribute but just to cover our track.
-                if (sfAttr == null)
-                {
-                    return false;
-                }
-
-                // if ignore then doesn't matter if it is pull or update we will ignore it.
-                if (sfAttr.Ignore)
-                {
-                    return true;
-                }
-
-                // if it is update and proptery is also ignore update then we ignore it.
-                return update && sfAttr.IgnoreUpdate;
-            }).Select(y=> y.Name);
-
-            // only get propteries that we do not ignore.
-            properties =
-                properties.Where(p => ignoreProps.All(x => x != p.PropertyName)).ToList();
-
-            return properties;
+            return properties.Where(x=> x != null).ToList();
         }
 
+        /// <summary>
+        /// Creates a <see cref="T:Newtonsoft.Json.Serialization.JsonProperty"/> for the given <see cref="T:System.Reflection.MemberInfo"/>.
+        /// </summary>
+        /// <param name="memberSerialization">The member's parent <see cref="T:Newtonsoft.Json.MemberSerialization"/>.</param><param name="member">The member to create a <see cref="T:Newtonsoft.Json.Serialization.JsonProperty"/> for.</param>
+        /// <returns>
+        /// A created <see cref="T:Newtonsoft.Json.Serialization.JsonProperty"/> for the given <see cref="T:System.Reflection.MemberInfo"/>.
+        /// </returns>
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            var jsonProp = base.CreateProperty(member, memberSerialization);
+
+            var sfAttrs = member.GetCustomAttributes(typeof(SalesForceAttribute), true);
+
+            // if there are no attr then no need to process any further
+            if (!sfAttrs.Any()) return jsonProp;
+
+            var sfAttr = sfAttrs.FirstOrDefault() as SalesForceAttribute;
+            // if there are no attr then no need to process any further
+            if (sfAttr == null)
+            {
+                return jsonProp;
+            }
+
+            // if ignore then we should skip it and return null
+            if (sfAttr.Ignore || (updateResolver && sfAttr.IgnoreUpdate))
+            {
+                return null;
+            }
+
+            // if no fieldname then we use the default
+            if (string.IsNullOrEmpty(sfAttr.FieldName))
+            {
+                return jsonProp;
+            }
+
+            jsonProp.PropertyName = sfAttr.FieldName;
+
+            return jsonProp;
+        }
     }
 }
