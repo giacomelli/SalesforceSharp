@@ -20,5 +20,10 @@ namespace SalesforceSharp.Serialization.SalesForceAttributes
         /// Exclude this field when serializing data to update to salesforce
         /// </summary>
         public bool IgnoreUpdate{ get; set; }
+
+        /// <summary>
+        /// FieldId in SalesForce for this property.  If none, then it will use the property name.
+        /// </summary>
+        public string FieldName { get; set; }
     }
 }
