@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Deserializers;
 
@@ -28,7 +29,15 @@ namespace SalesforceSharp.Serialization
         /// </summary>
         public string DateFormat { get; set; }
         #endregion
-        
+
+        private SalesForceContractResolver salesForceContractResolver;
+
+        public GenericJsonDeserializer(SalesForceContractResolver salesForceContractResolver)
+        {
+            if (salesForceContractResolver == null) throw new ArgumentNullException("salesForceContractResolver");
+            this.salesForceContractResolver = salesForceContractResolver;
+        }
+
         #region Methods
         /// <summary>
         /// Deserializes the specified response.
@@ -38,7 +47,7 @@ namespace SalesforceSharp.Serialization
         /// <returns></returns>
         public T Deserialize<T>(IRestResponse response)
         {
-            return JsonConvert.DeserializeObject<T>(response.Content);
+            return JsonConvert.DeserializeObject<T>(response.Content, new JsonSerializerSettings(){ContractResolver = salesForceContractResolver});
         }
         #endregion
     }
