@@ -45,7 +45,7 @@ namespace SalesforceSharp
             m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
-            genericJsonDeserializer = new GenericJsonDeserializer();
+            genericJsonDeserializer = new GenericJsonDeserializer(new SalesForceContractResolver(false));
             updateJsonSerializer = new GenericJsonSerializer(new SalesForceContractResolver(true));
         }
         #endregion
@@ -141,11 +141,18 @@ namespace SalesforceSharp
                 if (response == null || response.Data == null) continue;
 
                 if (!response.Data.Records.Any()) continue;
-                var customResponse = genericJsonDeserializer.Deserialize<SalesforceQueryResult<T>>(response);
+                try
+                {
+                    var customResponse = genericJsonDeserializer.Deserialize<SalesforceQueryResult<T>>(response);
+                    if (customResponse == null) continue;
+                    action(customResponse.Records);
+                    returns.AddRange(customResponse.Records);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
 
-                if (customResponse == null) continue;
-                action(customResponse.Records);
-                returns.AddRange(customResponse.Records);
 
             } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl));
 
@@ -420,16 +427,12 @@ namespace SalesforceSharp
                         {
                             continue;
                         }
+                        if (!string.IsNullOrEmpty(sfAttr.FieldName))
+                        {
+                            propNames.Add(sfAttr.FieldName);
+                            continue;
+                        }
                     }
-                }
-
-                var attr = prop.GetCustomAttributes(typeof(JsonPropertyAttribute), true).FirstOrDefault();
-                // if it doesn't have JsonProperty and we fall back to property name.
-                if (attr != null)
-                {
-                    var jpAttr = attr as JsonPropertyAttribute;
-                    propNames.Add(jpAttr.PropertyName);
-                    continue;
                 }
 
                 propNames.Add(prop.Name);
