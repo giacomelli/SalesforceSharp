@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SalesforceSharp.Security;
@@ -160,6 +161,28 @@ namespace SalesforceSharp.FunctionalTests
 
             Assert.IsNotNull(totalRecords);
             Assert.AreNotEqual(0, totalRecords);
+        }
+
+        #endregion
+
+        #region GetSOjbect
+
+        [Test]
+        public void Get_sojbect_Detail_work()
+        {
+            var target = CreateClientAndAuth();
+            var accObject = target.GetSObjectDetail("account");
+            Assert.IsNotNull(accObject);
+            Assert.AreEqual(accObject.Name, "Account");
+            Assert.IsNotNull(accObject.fields);
+            Assert.IsNotEmpty(accObject.fields);
+            Assert.IsNotNull(accObject.fields.FirstOrDefault(x=> x.Name =="Id"));
+
+            var industryField = accObject.fields.FirstOrDefault(x => x.Name == "Industry");
+            Assert.IsNotNull(industryField);
+            Assert.IsNotNull(industryField.PicklistValues);
+            Assert.IsNotEmpty(industryField.PicklistValues);
+            Assert.IsNotNull(industryField.PicklistValues.FirstOrDefault(y => y.Value == "Engineering"));
         }
 
         #endregion

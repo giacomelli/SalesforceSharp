@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using RestSharp;
+using SalesforceSharp.Models;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
 using RestSharp.Extensions;
@@ -334,6 +335,21 @@ namespace SalesforceSharp
 
             return recoredDeleted;
         }
+
+        /// <summary>
+        /// Get sObject Details.
+        /// </summary>
+        /// <param name="sobjectApiName">object Api Id</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns></returns>
+        public SalesForceObject GetSObjectDetail(string sobjectApiName, string altUrl = "")
+        {
+            var url = "{0}/{1}/describe".With(string.IsNullOrEmpty(altUrl) ? GetUrl("sobjects") : GetAltUrl(altUrl), sobjectApiName);
+
+            var response = Request<SalesForceObject>(url);
+            return response.Data;
+        }
+
         #endregion
 
         #region Requests
