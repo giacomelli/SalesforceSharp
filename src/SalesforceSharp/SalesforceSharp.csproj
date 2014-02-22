@@ -43,7 +43,7 @@
     <Reference Include="HelperSharp">
       <HintPath>..\packages\HelperSharp.0.0.3.5\lib\net35\HelperSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Jso>
+    <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
 	
