@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using HelperSharp;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
+using SalesforceSharp.Models;
 using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
 using RestSharp.Extensions;
@@ -20,6 +23,8 @@ namespace SalesforceSharp
         private string m_accessToken;
         private DynamicJsonDeserializer m_deserializer;
         private IRestClient m_restClient;
+        private GenericJsonDeserializer genericJsonDeserializer;
+        private GenericJsonSerializer updateJsonSerializer;
         #endregion
 
         #region Constructors
@@ -40,7 +45,8 @@ namespace SalesforceSharp
             m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
-            Headers = new Dictionary<string, string>();
+            genericJsonDeserializer = new GenericJsonDeserializer(new SalesforceContractResolver(false));
+            updateJsonSerializer = new GenericJsonSerializer(new SalesforceContractResolver(true));
         }
         #endregion
 
@@ -71,14 +77,6 @@ namespace SalesforceSharp
         /// The instance URL.
         /// </value>
         public string InstanceUrl { get; private set; }
-
-        /// <summary>
-        /// Gets extra request headers.
-        /// </summary>
-        /// <remarks>
-        /// The default is an empty dictionary.
-        /// </remarks>
-        public IDictionary<string, string> Headers { get; private set; }
         #endregion
 
         #region Methods
@@ -97,7 +95,6 @@ namespace SalesforceSharp
         /// <summary>
         /// Executes a SOQL query and returns the result.
         /// </summary>
-		/// <typeparam name="T">The type of the record. Only public properties will receive the data.</typeparam>
         /// <param name="query">The SOQL query.</param>
         /// <param name="altUrl">The url to use without the instance url</param>
         /// <returns>The API result for the query.</returns>
@@ -122,7 +119,7 @@ namespace SalesforceSharp
 
             var escapedQuery = query.UrlEncode();
 
-            var url = "{0}?q={1}".With(altUrl == string.Empty ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
+            var url = "{0}?q={1}".With(string.IsNullOrEmpty(altUrl) ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
 
             var returns = new List<T>();
             IRestResponse<SalesforceQueryResult<T>> response = null;
@@ -141,29 +138,36 @@ namespace SalesforceSharp
                 }
 
                 response = Request<SalesforceQueryResult<T>>(url);
-                if (response != null && response.Data != null)
+                if (response == null || response.Data == null) continue;
+
+                if (!response.Data.Records.Any()) continue;
+                try
                 {
-                    if (response.Data.Records.Any())
-                    {
-                        action(response.Data.Records);
-                        returns.AddRange(response.Data.Records);
-                    }
+                    var customResponse = genericJsonDeserializer.Deserialize<SalesforceQueryResult<T>>(response);
+                    if (customResponse == null) continue;
+                    action(customResponse.Records);
+                    returns.AddRange(customResponse.Records);
                 }
-                
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+
             } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl));
 
             return returns;
         }
 
 
-        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T: new()
+        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T : new()
         {
             if (previousResponse == null || previousResponse.Data == null ||
                 string.IsNullOrEmpty(previousResponse.Data.NextRecordsUrl))
             {
                 return string.Empty;
             }
-            return  InstanceUrl + previousResponse.Data.NextRecordsUrl;
+            return InstanceUrl + previousResponse.Data.NextRecordsUrl;
 
         }
 
@@ -330,6 +334,21 @@ namespace SalesforceSharp
 
             return recoredDeleted;
         }
+
+        /// <summary>
+        /// Get sObject Details.
+        /// </summary>
+        /// <param name="sobjectApiName">object Api Id</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns></returns>
+        public SalesforceObject GetSObjectDetail(string sobjectApiName, string altUrl = "")
+        {
+            var url = "{0}/{1}/describe".With(string.IsNullOrEmpty(altUrl) ? GetUrl("sobjects") : GetAltUrl(altUrl), sobjectApiName);
+
+            var response = Request<SalesforceObject>(url);
+            return response.Data;
+        }
+
         #endregion
 
         #region Requests
@@ -355,14 +374,9 @@ namespace SalesforceSharp
             request.Method = method;
             request.AddHeader("Authorization", "Bearer " + m_accessToken);
 
-            foreach (var pair in Headers)
-            {
-                request.AddHeader(pair.Key, pair.Value);
-            }
-
             if (record != null)
             {
-                request.AddBody(record);
+                request.AddParameter("application/json; charset=utf-8", updateJsonSerializer.Serialize(record), ParameterType.RequestBody);
             }
 
             var response = m_restClient.Execute<T>(request);
@@ -398,7 +412,8 @@ namespace SalesforceSharp
 
             if (response.ErrorException != null)
             {
-                throw response.ErrorException;
+                var ex = new FormatException(string.Format("{0}{1}{2}", response.ErrorException.Message, Environment.NewLine, response.Content));
+                throw ex;
             }
         }
         #endregion
@@ -409,9 +424,36 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="recordType">Type of the record.</param>
         /// <returns></returns>
-        protected static string GetRecordProjection(Type recordType)
+        public static string GetRecordProjection(Type recordType)
         {
-            return String.Join(", ", recordType.GetProperties().Select(p => p.Name));
+            var propNames = new List<string>();
+
+            var props = recordType.GetProperties();
+            foreach (var prop in props)
+            {
+                var sfAttrs = prop.GetCustomAttributes(typeof (SalesforceAttribute), true);
+                // If Ignore then we shouldn't include it.
+                if (sfAttrs.Any())
+                {
+                    var sfAttr = sfAttrs.FirstOrDefault() as SalesforceAttribute;
+                    if (sfAttr != null)
+                    {
+                        if (sfAttr.Ignore)
+                        {
+                            continue;
+                        }
+                        if (!string.IsNullOrEmpty(sfAttr.FieldName))
+                        {
+                            propNames.Add(sfAttr.FieldName);
+                            continue;
+                        }
+                    }
+                }
+
+                propNames.Add(prop.Name);
+            }
+
+            return String.Join(", ", propNames);
         }
 
         /// <summary>

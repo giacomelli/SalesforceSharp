@@ -1,8 +1,11 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
+using Newtonsoft.Json;
 using SalesforceSharp.Security;
-using SalesforceSharp.FunctionalTests.Stubs;
+using SalesforceSharp.Serialization;
 using TestSharp;
+using SalesforceSharp.FunctionalTests.Stubs;
 
 namespace SalesforceSharp.FunctionalTests
 {
@@ -101,6 +104,22 @@ namespace SalesforceSharp.FunctionalTests
         }
 
 
+        [Test]
+        public void Query_ValidQueryWithJsonAttributeObject_Result()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.QueryActionBatch<RecordStub>("SELECT  id, name, Phone from Account where Phone != '' LIMIT 3 ",
+                (a) => { });
+            Assert.IsNotNull(actual);
+
+            if (actual.Count > 0)
+            {
+                Assert.IsNotNullOrEmpty(actual[0].Id);
+                Assert.IsNotNullOrEmpty(actual[0].Name);
+                Assert.IsNotNullOrEmpty(actual[0].PhoneCustom);
+            }
+        }
+
         /// <summary>
         /// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
         /// </summary>
@@ -120,13 +139,13 @@ namespace SalesforceSharp.FunctionalTests
 		{
 			var target = CreateClientAndAuth();
 
-			// Public FIELDS are not supported.
+			// Public FIELDS are supported.
 			var actual1 = target.Query<ContactStubWithFields>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
 			Assert.AreEqual(1, actual1.Count);
 
 			var first1 = actual1 [0];
-			TextAssert.IsNullOrEmpty (first1.Id);
-			TextAssert.IsNullOrEmpty (first1.Name);
+			TextAssert.IsNotNullOrEmpty (first1.Id);
+			TextAssert.IsNotNullOrEmpty (first1.Name);
 		
 			// Public PROPERTIES are supported.
 			var actual2 = target.Query<ContactStub>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
@@ -142,7 +161,7 @@ namespace SalesforceSharp.FunctionalTests
         {
             var target = CreateClientAndAuth();
 
-            ExceptionAssert.IsThrowing(typeof(FormatException), () =>
+            ExceptionAssert.IsThrowing(typeof(JsonReaderException), () =>
             {
                 target.Query<WrongRecordStub>("SELECT IsDeleted FROM Account");
             });
@@ -168,6 +187,28 @@ namespace SalesforceSharp.FunctionalTests
             Assert.IsNotNull(totalRecords);
             Assert.AreNotEqual(0, totalRecords);
 			Assert.AreEqual (totalRecords, actual.Count);
+        }
+
+        #endregion
+
+        #region GetSOjbect
+
+        [Test]
+		public void Get_SOjbectDetail_work()
+        {
+            var target = CreateClientAndAuth();
+			var accObject = target.GetSObjectDetail("account");
+            Assert.IsNotNull(accObject);
+            Assert.AreEqual(accObject.Name, "Account");
+            Assert.IsNotNull(accObject.Fields);
+            Assert.IsNotEmpty(accObject.Fields);
+            Assert.IsNotNull(accObject.Fields.FirstOrDefault(x=> x.Name =="Id"));
+
+            var industryField = accObject.Fields.FirstOrDefault(x => x.Name == "Industry");
+            Assert.IsNotNull(industryField);
+            Assert.IsNotNull(industryField.PicklistValues);
+            Assert.IsNotEmpty(industryField.PicklistValues);
+            Assert.IsNotNull(industryField.PicklistValues.FirstOrDefault(y => y.Value == "Engineering"));
         }
 
         #endregion
@@ -272,12 +313,12 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_ValidRecordWithClass_Updated()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
+            var actual = target.Query<RecordStub>("SELECT id, name, Phone, FirstName, LastName, description FROM Contact LIMIT 10");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
             {
-                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub { Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
+                Assert.IsTrue(target.Update("Contact", actual[0].Id, new RecordStub { FirstName = actual[0].FirstName, LastName  = actual[0].LastName, PhoneCustom = actual[0].PhoneCustom, Description = DateTime.Now + " UPDATED" }));
             }
         }
 
@@ -346,6 +387,18 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
+        #region ClassHelper
+
+        [Test]
+        public void GetRecordProjection_Result()
+        {
+            var jSonPropertyString = SalesforceClient.GetRecordProjection(typeof(TestJson));
+            Assert.IsTrue(jSonPropertyString.Contains("Id"));
+            Assert.IsTrue(jSonPropertyString.Contains("JsonName"));
+            Assert.IsFalse(jSonPropertyString.Contains("JsonIgnoreMe"));
+        }
+        #endregion
+
         #region Helpers
         private SalesforceClient CreateClientAndAuth()
         {
@@ -373,6 +426,16 @@ namespace SalesforceSharp.FunctionalTests
 
             return client;
         }
+        
+        public class TestJson
+        {
+            public int Id { get; set; }
+            [Salesforce(Ignore = true)]
+            public string JsonIgnoreMe { get; set; }
+            [Salesforce(FieldName = "JsonName")]
+            public string JsonRenameMe { get; set; }
+        }
         #endregion
+
     }
 }
