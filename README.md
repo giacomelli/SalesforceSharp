@@ -10,6 +10,7 @@ Features
 ===
  - Create, Update, Delete and Query records.
  - FindById to easy found records.
+ - SalesforceAttribute (Ignore, IgnoreUpdate and FieldName).
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
