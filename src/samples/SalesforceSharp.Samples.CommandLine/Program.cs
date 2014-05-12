@@ -13,9 +13,9 @@ using SalesforceSharp.Security;
 //Twitter: @scottvelzen
 
 
-//Note - the version of Json package manager pulled down with SalesForceSharp didn't work, I neded to do PM>Install-Package Newtonsoft.Json to make this work
+//Note - the version of Json package manager pulled down with SalesforceSharp didn't work, I neded to do PM>Install-Package Newtonsoft.Json to make this work
 
-namespace SalesForceSharpSample
+namespace SalesforceSharp.Samples.CommandLine
 {
 
     // sample class used for queries 
