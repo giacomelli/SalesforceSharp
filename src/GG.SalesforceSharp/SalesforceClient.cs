@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using GG.SalesforceSharp.Security;
+using GG.SalesforceSharp.Serialization;
 using HelperSharp;
 using Newtonsoft.Json.Linq;
 using RestSharp;
-using SalesforceSharp.Security;
-using SalesforceSharp.Serialization;
 
-namespace SalesforceSharp
+namespace GG.SalesforceSharp
 {
     /// <summary>
     /// The central point to communicate with Salesforce REST API.
@@ -33,7 +33,7 @@ namespace SalesforceSharp
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>
         /// <param name="restClient">The rest client.</param>
-        protected internal SalesforceClient(IRestClient restClient)
+        public SalesforceClient(IRestClient restClient)
         {
             m_restClient = restClient;
             ApiVersion = "v28.0";

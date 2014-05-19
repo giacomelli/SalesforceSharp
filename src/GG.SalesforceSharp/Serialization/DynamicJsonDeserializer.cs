@@ -2,7 +2,7 @@
 using RestSharp;
 using RestSharp.Deserializers;
 
-namespace SalesforceSharp.Serialization
+namespace GG.SalesforceSharp.Serialization
 {
     /// <summary>
     /// Json Deserializar using dynamic.
@@ -10,7 +10,7 @@ namespace SalesforceSharp.Serialization
     /// Original source code from http://www.csharpcity.com/2013/deserializing-to-dynamic-with-restsharp/.
     /// </remarks>
     /// </summary>
-    internal class DynamicJsonDeserializer : IDeserializer
+    public class DynamicJsonDeserializer : IDeserializer
     {
         #region Properties
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using GG.SalesforceSharp;
 using NUnit.Framework;
 
 namespace SalesforceSharp.UnitTests

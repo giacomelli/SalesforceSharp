@@ -1,9 +1,9 @@
 ﻿using System.Net;
+using GG.SalesforceSharp.Serialization;
 using HelperSharp;
 using RestSharp;
-using SalesforceSharp.Serialization;
 
-namespace SalesforceSharp.Security
+namespace GG.SalesforceSharp.Security
 {
     /// <summary>
     /// The username-password authentication flow can be used to authenticate when the consumer already has the user’s credentials.
@@ -51,7 +51,7 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password)
+        public UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password)
         {
             ExceptionHelper.ThrowIfNull("restClient", restClient);
             ExceptionHelper.ThrowIfNullOrEmpty("clientId", clientId);

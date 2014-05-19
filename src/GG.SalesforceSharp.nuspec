@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>GG.SalesforceSharp</id>
+    <version>1.0.0.0</version>
+    <title>GG.SalesforceSharp</title>
+    <authors>JustGiving</authors>
+    <owners>JustGiving</owners>
+    <summary>GG.SalesforceSharp</summary>
+    <projectUrl>http://www.justgiving.com</projectUrl>
+    <iconUrl>https://fbcdn-sphotos-f-a.akamaihd.net/hphotos-ak-ash3/t1.0-9/1187109_10151656096571374_687309669_n.jpg</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>SalesForce Sharp with added functionality to return raw response from SalesForce rather than deserialising all responses to SObjects.</description>
+    <releaseNotes>
+    </releaseNotes>
+    <copyright>JustGiving 2014</copyright>
+    <tags>tags</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="HelperSharp" version="0.0.2.9" />
+        <dependency id="Newtonsoft.Json" version="5.0.6" />
+        <dependency id="RestSharp" version="104.1" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="GG.SalesForceSharp.dll" target="lib\net40" />
+  </files>
+</package>

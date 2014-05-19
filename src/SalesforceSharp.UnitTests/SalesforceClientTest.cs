@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using GG.SalesforceSharp;
 using NUnit.Framework;
 using RestSharp;
 using Rhino.Mocks;
-using SalesforceSharp.Security;
-using SalesforceSharp.Serialization;
+using GG.SalesforceSharp.Security;
+using GG.SalesforceSharp.Serialization;
 using SalesforceSharp.UnitTests.Stubs;
 using TestSharp;
 

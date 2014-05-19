@@ -1,5 +1,5 @@
 ﻿
-namespace SalesforceSharp.Security
+namespace GG.SalesforceSharp.Security
 {
     /// <summary>
     /// The informations about the authentication.

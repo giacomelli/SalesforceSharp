@@ -1,6 +1,7 @@
 using System;
+using GG.SalesforceSharp;
+using GG.SalesforceSharp.Security;
 using NUnit.Framework;
-using SalesforceSharp.Security;
 using SalesforceSharp.FunctionalTests.Stubs;
 using TestSharp;
 using HelperSharp;
