@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using GG.SalesforceSharp;
+using GG.SalesforceSharp.Security;
 using NUnit.Framework;
 using Newtonsoft.Json;
 using SalesforceSharp.Security;
@@ -211,6 +213,26 @@ namespace SalesforceSharp.FunctionalTests
             Assert.IsNotNull(industryField.PicklistValues.FirstOrDefault(y => y.Value == "Engineering"));
         }
 
+        #endregion
+
+        #region GetRaw
+        [Test]
+        public void GetRaw_ValidRecord()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+            var actual = target.GetRaw("Contact", id);
+
+            Assert.IsNotNull(actual);
+            Assert.That(actual.Contains(string.Format("\"FirstName\":\"{0}\"", record.FirstName)));
+            Assert.That(actual.Contains(string.Format("\"LastName\":\"{0}\"", record.LastName)));
+        }
         #endregion
 
         #region FindById

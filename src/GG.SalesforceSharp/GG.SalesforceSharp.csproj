@@ -7,8 +7,8 @@
     <ProjectGuid>{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SalesforceSharp</RootNamespace>
-    <AssemblyName>SalesforceSharp</AssemblyName>
+    <RootNamespace>GG.SalesforceSharp</RootNamespace>
+    <AssemblyName>GG.SalesforceSharp</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -26,7 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\SalesforceSharp.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\GG.SalesforceSharp.xml</DocumentationFile>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -37,7 +37,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\SalesforceSharp.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\GG.SalesforceSharp.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="HelperSharp">

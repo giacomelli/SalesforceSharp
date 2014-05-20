@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using GG.SalesforceSharp.Security;
+using GG.SalesforceSharp.Serialization;
 using HelperSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -12,7 +14,7 @@ using SalesforceSharp.Security;
 using SalesforceSharp.Serialization;
 using RestSharp.Extensions;
 
-namespace SalesforceSharp
+namespace GG.SalesforceSharp
 {
     /// <summary>
     /// The central point to communicate with Salesforce REST API.
@@ -40,7 +42,7 @@ namespace SalesforceSharp
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>
         /// <param name="restClient">The rest client.</param>
-        protected internal SalesforceClient(IRestClient restClient)
+        public SalesforceClient(IRestClient restClient)
         {
             m_restClient = restClient;
             ApiVersion = "v28.0";
@@ -349,6 +351,39 @@ namespace SalesforceSharp
             return response.Data;
         }
 
+        /// <summary>
+        /// Returns the raw content of a GET request to the given object
+        /// </summary>
+        /// <param name="objectName">The object name</param>
+        /// <param name="recordId">The record id</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The returned content as a string</returns>
+        public string GetRaw(string objectName, string recordId, string altUrl)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var response = RequestRaw(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId));
+
+            return response.Content;
+        }
+
+        /// <summary>
+        /// Returns the raw content of a GET request to the given object
+        /// </summary>
+        /// <param name="objectName">The object name</param>
+        /// <param name="recordId">The record id</param>
+        /// <returns>The returned content as a string</returns>
+        public string GetRaw(string objectName, string recordId)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+
+            var response = RequestRaw(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId));
+
+            return response.Content;
+        }
         #endregion
 
         #region Requests
@@ -368,21 +403,60 @@ namespace SalesforceSharp
                 throw new InvalidOperationException("Please, execute Authenticate method before call any REST API operation.");
             }
 
+            var request = BuildRequest(baseUrl, objectName, record, method);
+
+            var response = m_restClient.Execute<T>(request);
+            CheckApiException(response);
+
+            return response;
+        }
+
+        /// <summary>
+        /// Perform the request against Salesforce's REST API.
+        /// </summary>
+        /// <param name="baseUrl">The base URL.</param>
+        /// <param name="objectName">The Name of the object.</param>
+        /// <param name="record">The record.</param>
+        /// <param name="method">The http method.</param>
+        /// <exception cref="System.InvalidOperationException">Please, execute Authenticate method before call any REST API operation.</exception>
+        protected IRestResponse RequestRaw(string baseUrl, string objectName = null, object record = null, Method method = Method.GET)
+        {
+            if (!IsAuthenticated)
+            {
+                throw new InvalidOperationException("Please, execute Authenticate method before call any REST API operation.");
+            }
+
+            var request = BuildRequest(baseUrl, objectName, record, method);
+
+            var response = m_restClient.Execute(request);
+            CheckApiException(response);
+
+            return response;
+        }
+
+        /// <summary>
+        /// Builds a rest request
+        /// </summary>
+        /// <param name="baseUrl">The base URL.</param>
+        /// <param name="objectName">The Name of the object.</param>
+        /// <param name="record">The record.</param>
+        /// <param name="method">The http method.</param>
+        /// <returns>A rest request object</returns>
+        private RestRequest BuildRequest(string baseUrl, string objectName, object record, Method method)
+        {
             m_restClient.BaseUrl = baseUrl;
-            var request = new RestRequest(objectName);
-            request.RequestFormat = DataFormat.Json;
-            request.Method = method;
+            var request = new RestRequest(objectName)
+                {
+                    RequestFormat = DataFormat.Json, 
+                    Method = method
+                };
             request.AddHeader("Authorization", "Bearer " + m_accessToken);
 
             if (record != null)
             {
                 request.AddParameter("application/json; charset=utf-8", updateJsonSerializer.Serialize(record), ParameterType.RequestBody);
             }
-
-            var response = m_restClient.Execute<T>(request);
-            CheckApiException(response);
-
-            return response;
+            return request;
         }
 
         /// <summary>

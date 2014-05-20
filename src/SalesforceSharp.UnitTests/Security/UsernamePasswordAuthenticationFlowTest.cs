@@ -1,9 +1,10 @@
 using System;
 using System.Net;
+using GG.SalesforceSharp;
+using GG.SalesforceSharp.Security;
 using NUnit.Framework;
 using RestSharp;
 using Rhino.Mocks;
-using SalesforceSharp.Security;
 using TestSharp;
 
 namespace SalesforceSharp.UnitTests.Security

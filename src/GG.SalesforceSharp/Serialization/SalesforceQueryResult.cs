@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using RestSharp;
 
-namespace SalesforceSharp.Serialization
+namespace GG.SalesforceSharp.Serialization
 {
     /// <summary>
     /// Represents the format of a query result.

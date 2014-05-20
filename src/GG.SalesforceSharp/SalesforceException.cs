@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace SalesforceSharp
+namespace GG.SalesforceSharp
 {
     #region Enum
     /// <summary>
@@ -126,7 +126,8 @@ namespace SalesforceSharp
         /// </summary>
         /// <param name="error">The error.</param>
         /// <param name="description">The description.</param>
-        internal SalesforceException(string error, string description) : this(ParseError(error), description)
+        public SalesforceException(string error, string description)
+            : this(ParseError(error), description)
         {
         }
 
@@ -136,7 +137,7 @@ namespace SalesforceSharp
         /// <param name="error">The error.</param>
         /// <param name="description">The description.</param>
         /// <param name="fields">The fields.</param>
-        internal SalesforceException(string error, string description, string[] fields)
+        public SalesforceException(string error, string description, string[] fields)
             : this(error, description)
         {
             Fields = fields;

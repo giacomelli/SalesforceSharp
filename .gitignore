@@ -111,3 +111,16 @@ src/SalesforceSharp.UnitTests/test-results/
 src/SalesforceSharp.FunctionalTests/test-results/
 src/test-results/
 *.userprefs
+
+/*.nupkg
+
+#Shared Build
+bootstrap.ps1
+jg-build-psake.ps1
+psake.psm1
+output/
+BuildOutput/
+nuget.exe
+.vagrant/
+*.transformed
+*.transformed.erb

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SalesforceSharp.Security
+﻿namespace GG.SalesforceSharp.Security
 {
     /// <summary>
     /// Defines a OAuth 2.0 authentication flow.
