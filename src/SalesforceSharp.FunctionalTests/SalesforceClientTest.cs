@@ -1,10 +1,13 @@
 using System;
+using System.Linq;
 using GG.SalesforceSharp;
 using GG.SalesforceSharp.Security;
 using NUnit.Framework;
-using SalesforceSharp.FunctionalTests.Stubs;
+using Newtonsoft.Json;
+using SalesforceSharp.Security;
+using SalesforceSharp.Serialization;
 using TestSharp;
-using HelperSharp;
+using SalesforceSharp.FunctionalTests.Stubs;
 
 namespace SalesforceSharp.FunctionalTests
 {
@@ -19,7 +22,7 @@ namespace SalesforceSharp.FunctionalTests
 
             ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.AuthenticationFailure, "authentication failure"), () =>
             {
-                target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret,  "invalid user name", TestConfig.Password));
+                target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, "invalid user name", TestConfig.Password));
             });
 
             Assert.IsFalse(target.IsAuthenticated);
@@ -63,7 +66,7 @@ namespace SalesforceSharp.FunctionalTests
 
             Assert.IsFalse(target.IsAuthenticated);
         }
-    
+
         [Test]
         public void Authenticate_ValidCredentials_Authenticated()
         {
@@ -71,7 +74,7 @@ namespace SalesforceSharp.FunctionalTests
             target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, TestConfig.Password));
             Assert.IsTrue(target.IsAuthenticated);
         }
-        #endregion    
+        #endregion
 
         #region Query
         [Test]
@@ -82,14 +85,14 @@ namespace SalesforceSharp.FunctionalTests
             ExceptionAssert.IsThrowing(typeof(SalesforceException), () =>
             {
                 target.Query<RecordStub>("SELECT id, name, FROM " + TestConfig.ObjectName);
-            });            
+            });
         }
 
         [Test]
         public void Query_ValidQueryWithObject_Result()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name FROM " + TestConfig.ObjectName);
+            var actual = target.Query<RecordStub>("SELECT id, name FROM Account");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
@@ -97,19 +100,119 @@ namespace SalesforceSharp.FunctionalTests
                 Assert.IsNotNullOrEmpty(actual[0].Id);
                 Assert.IsNotNullOrEmpty(actual[0].Name);
             }
+
+            actual = target.Query<RecordStub>("SELECT id, name FROM Account WHERE LastModifiedDate = 2013-12-01T12:00:00+00:00");
+            Assert.IsNotNull(actual);
         }
+
+
+        [Test]
+        public void Query_ValidQueryWithJsonAttributeObject_Result()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.QueryActionBatch<RecordStub>("SELECT  id, name, Phone from Account where Phone != '' LIMIT 3 ",
+                (a) => { });
+            Assert.IsNotNull(actual);
+
+            if (actual.Count > 0)
+            {
+                Assert.IsNotNullOrEmpty(actual[0].Id);
+                Assert.IsNotNullOrEmpty(actual[0].Name);
+                Assert.IsNotNullOrEmpty(actual[0].PhoneCustom);
+            }
+        }
+
+        /// <summary>
+        /// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/4.
+        /// </summary>
+        [Test]
+        public void Query_ValidQueryWithSpecialChars_Result()
+        {
+            var target = CreateClientAndAuth();
+            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account WHERE LastModifiedDate >= 2013-12-01T12:00:00+00:00");
+            Assert.IsNotNull(actual);
+        }
+
+		/// <summary>
+		/// To validate this issue: https://github.com/giacomelli/SalesforceSharp/issues/6.
+		/// </summary>
+		[Test]
+		public void Query_ValidQueryClassWithFields_ResultNoFieldsBind()
+		{
+			var target = CreateClientAndAuth();
+
+			// Public FIELDS are supported.
+			var actual1 = target.Query<ContactStubWithFields>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
+			Assert.AreEqual(1, actual1.Count);
+
+			var first1 = actual1 [0];
+			TextAssert.IsNotNullOrEmpty (first1.Id);
+			TextAssert.IsNotNullOrEmpty (first1.Name);
+		
+			// Public PROPERTIES are supported.
+			var actual2 = target.Query<ContactStub>("SELECT Id, Name, Email FROM Contact LIMIT 1 OFFSET 0");
+			Assert.AreEqual(1, actual2.Count);
+
+			var first2 = actual2 [0];
+			TextAssert.IsNotNullOrEmpty (first2.Id);
+			TextAssert.IsNotNullOrEmpty (first2.Name);
+		}
 
         [Test]
         public void Query_ValidQueryWithObjectWrongPropertyTypes_Exception()
         {
             var target = CreateClientAndAuth();
 
-            ExceptionAssert.IsThrowing(typeof(FormatException), () =>
+            ExceptionAssert.IsThrowing(typeof(JsonReaderException), () =>
             {
                 target.Query<WrongRecordStub>("SELECT IsDeleted FROM Account");
             });
-            
+
         }
+        #endregion
+
+        #region
+        [Test]
+        public void QueryActionBatch_ValidQuery_AllRecords()
+        {
+            var target = CreateClientAndAuth();
+            var queryString = "SELECT id, name, description ";
+            queryString += " FROM Account";
+
+            var totalRecords = 0;
+
+            var actual = target.QueryActionBatch<RecordStub>(queryString, s =>
+            {
+                totalRecords += s.Count;
+            });
+
+            Assert.IsNotNull(totalRecords);
+            Assert.AreNotEqual(0, totalRecords);
+			Assert.AreEqual (totalRecords, actual.Count);
+        }
+
+        #endregion
+
+        #region GetSOjbect
+
+        [Test]
+		public void Get_SOjbectDetail_work()
+        {
+            var target = CreateClientAndAuth();
+			var accObject = target.GetSObjectDetail("account");
+            Assert.IsNotNull(accObject);
+            Assert.AreEqual(accObject.Name, "Account");
+            Assert.IsNotNull(accObject.Fields);
+            Assert.IsNotEmpty(accObject.Fields);
+            Assert.IsNotNull(accObject.Fields.FirstOrDefault(x=> x.Name =="Id"));
+
+            var industryField = accObject.Fields.FirstOrDefault(x => x.Name == "Industry");
+            Assert.IsNotNull(industryField);
+            Assert.IsNotNull(industryField.PicklistValues);
+            Assert.IsNotEmpty(industryField.PicklistValues);
+            Assert.IsNotNull(industryField.PicklistValues.FirstOrDefault(y => y.Value == "Engineering"));
+        }
+
         #endregion
 
         #region GetRaw
@@ -137,7 +240,7 @@ namespace SalesforceSharp.FunctionalTests
         public void FindById_NotExistingID_Null()
         {
             var target = CreateClientAndAuth();
-            Assert.IsNull(target.FindById<RecordStub>("Contact", "003i000000K2BP0AAM"));            
+            Assert.IsNull(target.FindById<RecordStub>("Contact", "003i000000K2BP0AAM"));
         }
 
         [Test]
@@ -161,7 +264,7 @@ namespace SalesforceSharp.FunctionalTests
 
         #region ReadMetaData
         [Test]
-        public void ReadMetaData_WhenCalled_ReturnsData()
+        public void ReadMetaData_ValidObjectName_Metadata()
         {
             var target = CreateClientAndAuth();
 
@@ -176,7 +279,7 @@ namespace SalesforceSharp.FunctionalTests
         public void Create_ValidRecordWithAnonymous_Created()
         {
             var target = CreateClientAndAuth();
-            var record = new 
+            var record = new
             {
                 FirstName = "Name " + DateTime.Now.Ticks,
                 LastName = "Last name"
@@ -199,8 +302,8 @@ namespace SalesforceSharp.FunctionalTests
             ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidField, "No such column 'FirstName1' on sobject of type Contact"), () =>
             {
                 target.Create("Contact", record);
-            });            
-		}
+            });
+        }
         #endregion
 
         #region Update
@@ -208,9 +311,10 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_InvalidId_Exception()
         {
             var target = CreateClientAndAuth();
-            
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.NotFound, "Provided external ID field does not exist or is not accessible: INVALID ID"), () => {
-                target.Update(TestConfig.ObjectName, "INVALID ID", new { Name = "TEST" });            
+
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.NotFound, "Provided external ID field does not exist or is not accessible: INVALID ID"), () =>
+            {
+                target.Update(TestConfig.ObjectName, "INVALID ID", new { Name = "TEST" });
             });
         }
 
@@ -220,7 +324,7 @@ namespace SalesforceSharp.FunctionalTests
             var target = CreateClientAndAuth();
             var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
             Assert.IsNotNull(actual);
-            
+
             if (actual.Count > 0)
             {
                 Assert.IsTrue(target.Update("Account", actual[0].Id, new { Description = DateTime.Now + " UPDATED" }));
@@ -231,12 +335,12 @@ namespace SalesforceSharp.FunctionalTests
         public void Update_ValidRecordWithClass_Updated()
         {
             var target = CreateClientAndAuth();
-            var actual = target.Query<RecordStub>("SELECT id, name, description FROM Account");
+            var actual = target.Query<RecordStub>("SELECT id, name, Phone, FirstName, LastName, description FROM Contact LIMIT 10");
             Assert.IsNotNull(actual);
 
             if (actual.Count > 0)
             {
-                Assert.IsTrue(target.Update("Account", actual[0].Id, new RecordStub {Name = actual[0].Name, Description = DateTime.Now + " UPDATED" }));
+                Assert.IsTrue(target.Update("Contact", actual[0].Id, new RecordStub { FirstName = actual[0].FirstName, LastName  = actual[0].LastName, PhoneCustom = actual[0].PhoneCustom, Description = DateTime.Now + " UPDATED" }));
             }
         }
 
@@ -305,6 +409,18 @@ namespace SalesforceSharp.FunctionalTests
         }
         #endregion
 
+        #region ClassHelper
+
+        [Test]
+        public void GetRecordProjection_Result()
+        {
+            var jSonPropertyString = SalesforceClient.GetRecordProjection(typeof(TestJson));
+            Assert.IsTrue(jSonPropertyString.Contains("Id"));
+            Assert.IsTrue(jSonPropertyString.Contains("JsonName"));
+            Assert.IsFalse(jSonPropertyString.Contains("JsonIgnoreMe"));
+        }
+        #endregion
+
         #region Helpers
         private SalesforceClient CreateClientAndAuth()
         {
@@ -320,18 +436,28 @@ namespace SalesforceSharp.FunctionalTests
         }
 
         private SalesforceClient CreateClientAndAuth(
-            string clientId, 
-            string clientSecret, 
-            string username, 
+            string clientId,
+            string clientSecret,
+            string username,
             string password)
         {
             var client = new SalesforceClient();
-            var authenticationFlow = CreateAuthenticationFlow(clientId, clientSecret, username, password);            
+            var authenticationFlow = CreateAuthenticationFlow(clientId, clientSecret, username, password);
 
             client.Authenticate(authenticationFlow);
 
             return client;
-        }        
+        }
+        
+        public class TestJson
+        {
+            public int Id { get; set; }
+            [Salesforce(Ignore = true)]
+            public string JsonIgnoreMe { get; set; }
+            [Salesforce(FieldName = "JsonName")]
+            public string JsonRenameMe { get; set; }
+        }
         #endregion
+
     }
 }

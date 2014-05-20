@@ -5,8 +5,14 @@ using System.Net;
 using GG.SalesforceSharp.Security;
 using GG.SalesforceSharp.Serialization;
 using HelperSharp;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
+using SalesforceSharp.Models;
+using SalesforceSharp.Security;
+using SalesforceSharp.Serialization;
+using RestSharp.Extensions;
 
 namespace GG.SalesforceSharp
 {
@@ -19,14 +25,17 @@ namespace GG.SalesforceSharp
         private string m_accessToken;
         private DynamicJsonDeserializer m_deserializer;
         private IRestClient m_restClient;
+        private GenericJsonDeserializer genericJsonDeserializer;
+        private GenericJsonSerializer updateJsonSerializer;
         #endregion
 
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
         /// </summary>        
-        public SalesforceClient() : this(new RestClient())
-        {        
+        public SalesforceClient()
+            : this(new RestClient())
+        {
         }
 
         /// <summary>
@@ -38,37 +47,39 @@ namespace GG.SalesforceSharp
             m_restClient = restClient;
             ApiVersion = "v28.0";
             m_deserializer = new DynamicJsonDeserializer();
+            genericJsonDeserializer = new GenericJsonDeserializer(new SalesforceContractResolver(false));
+            updateJsonSerializer = new GenericJsonSerializer(new SalesforceContractResolver(true));
         }
         #endregion
-		 
-		#region Properties
-		/// <summary>
-		/// Gets or sets the API version.
-		/// </summary>
-		/// <remarks>
-		/// The default value is v28.0.
-		/// </remarks>
-		/// <value>
-		/// The API version.
-		/// </value>
-		public string ApiVersion { get; set; }       
 
-		/// <summary>
-		/// Gets a value indicating whether this instance is authenticated.
-		/// </summary>
-		/// <value>
-		/// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
-		/// </value>
-		public bool IsAuthenticated { get; private set; }
+        #region Properties
+        /// <summary>
+        /// Gets or sets the API version.
+        /// </summary>
+        /// <remarks>
+        /// The default value is v28.0.
+        /// </remarks>
+        /// <value>
+        /// The API version.
+        /// </value>
+        public string ApiVersion { get; set; }
 
-		/// <summary>
-		/// Gets the instance URL.
-		/// </summary>
-		/// <value>
-		/// The instance URL.
-		/// </value>
-		public string InstanceUrl { get; private set; }
-		#endregion
+        /// <summary>
+        /// Gets a value indicating whether this instance is authenticated.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsAuthenticated { get; private set; }
+
+        /// <summary>
+        /// Gets the instance URL.
+        /// </summary>
+        /// <value>
+        /// The instance URL.
+        /// </value>
+        public string InstanceUrl { get; private set; }
+        #endregion
 
         #region Methods
         /// <summary>
@@ -82,7 +93,7 @@ namespace GG.SalesforceSharp
             InstanceUrl = info.InstanceUrl;
             IsAuthenticated = true;
         }
-     
+
         /// <summary>
         /// Executes a SOQL query and returns the result.
         /// </summary>
@@ -91,20 +102,75 @@ namespace GG.SalesforceSharp
         /// <returns>The API result for the query.</returns>
         public IList<T> Query<T>(string query, string altUrl = "") where T : new()
         {
+            return QueryActionBatch<T>(query, s => { }, altUrl);
+        }
+
+
+        /// <summary>
+        /// Executes a SOQL query and returns the result.
+        /// </summary>
+        /// <param name="query">The SOQL query.</param>
+        /// <param name="action">Action to call after getting a non error response.</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The API result for the query.</returns>
+        public IList<T> QueryActionBatch<T>(string query, Action<IList<T>> action, string altUrl = "") where T : new()
+        {
+            if (action == null) throw new ArgumentNullException("action");
+
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
-            string url;
-            if (altUrl == string.Empty)
-            {
-                url = "{0}?q={1}".With(GetUrl("query"), query);
-            }
-            else
-            {
-                url = "{0}?q={1}".With(GetAltUrl(altUrl), query);
-            }
-            var response = Request<SalesforceQueryResult<T>>(url);
+            var escapedQuery = query.UrlEncode();
 
-            return response.Data.Records;
+            var url = "{0}?q={1}".With(string.IsNullOrEmpty(altUrl) ? GetUrl("query") : GetAltUrl(altUrl), escapedQuery);
+
+            var returns = new List<T>();
+            IRestResponse<SalesforceQueryResult<T>> response = null;
+
+            do
+            {
+                if (response != null)
+                {
+                    url = GetNextRecordsUrl(response);
+                    response = null;
+                }
+
+                if (string.IsNullOrEmpty(url))
+                {
+                    break;
+                }
+
+                response = Request<SalesforceQueryResult<T>>(url);
+                if (response == null || response.Data == null) continue;
+
+                if (!response.Data.Records.Any()) continue;
+                try
+                {
+                    var customResponse = genericJsonDeserializer.Deserialize<SalesforceQueryResult<T>>(response);
+                    if (customResponse == null) continue;
+                    action(customResponse.Records);
+                    returns.AddRange(customResponse.Records);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+
+            } while (response != null && response.Data != null && !response.Data.Done && !string.IsNullOrEmpty(response.Data.NextRecordsUrl));
+
+            return returns;
+        }
+
+
+        private string GetNextRecordsUrl<T>(IRestResponse<SalesforceQueryResult<T>> previousResponse) where T : new()
+        {
+            if (previousResponse == null || previousResponse.Data == null ||
+                string.IsNullOrEmpty(previousResponse.Data.NextRecordsUrl))
+            {
+                return string.Empty;
+            }
+            return InstanceUrl + previousResponse.Data.NextRecordsUrl;
+
         }
 
         /// <summary>
@@ -180,7 +246,7 @@ namespace GG.SalesforceSharp
         /// <param name="objectName">The name of the object in Salesforce.</param>
         /// <param name="record">The record to be created.</param>
         /// <returns>The Id of created record.</returns>
-        public string Create(string objectName, object record) 
+        public string Create(string objectName, object record)
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
             ExceptionHelper.ThrowIfNull("record", record);
@@ -226,8 +292,8 @@ namespace GG.SalesforceSharp
             var response = Request<object>(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
-            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;                   
-            
+            var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;
+
             return recordUpdated;
         }
 
@@ -269,6 +335,20 @@ namespace GG.SalesforceSharp
             var recoredDeleted = response.StatusCode == HttpStatusCode.NoContent;
 
             return recoredDeleted;
+        }
+
+        /// <summary>
+        /// Get sObject Details.
+        /// </summary>
+        /// <param name="sobjectApiName">object Api Id</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns></returns>
+        public SalesforceObject GetSObjectDetail(string sobjectApiName, string altUrl = "")
+        {
+            var url = "{0}/{1}/describe".With(string.IsNullOrEmpty(altUrl) ? GetUrl("sobjects") : GetAltUrl(altUrl), sobjectApiName);
+
+            var response = Request<SalesforceObject>(url);
+            return response.Data;
         }
 
         /// <summary>
@@ -374,7 +454,7 @@ namespace GG.SalesforceSharp
 
             if (record != null)
             {
-                request.AddBody(record);
+                request.AddParameter("application/json; charset=utf-8", updateJsonSerializer.Serialize(record), ParameterType.RequestBody);
             }
             return request;
         }
@@ -406,7 +486,8 @@ namespace GG.SalesforceSharp
 
             if (response.ErrorException != null)
             {
-                throw response.ErrorException;
+                var ex = new FormatException(string.Format("{0}{1}{2}", response.ErrorException.Message, Environment.NewLine, response.Content));
+                throw ex;
             }
         }
         #endregion
@@ -417,9 +498,36 @@ namespace GG.SalesforceSharp
         /// </summary>
         /// <param name="recordType">Type of the record.</param>
         /// <returns></returns>
-        protected static string GetRecordProjection(Type recordType)
+        public static string GetRecordProjection(Type recordType)
         {
-            return String.Join(", ", recordType.GetProperties().Select(p => p.Name));
+            var propNames = new List<string>();
+
+            var props = recordType.GetProperties();
+            foreach (var prop in props)
+            {
+                var sfAttrs = prop.GetCustomAttributes(typeof (SalesforceAttribute), true);
+                // If Ignore then we shouldn't include it.
+                if (sfAttrs.Any())
+                {
+                    var sfAttr = sfAttrs.FirstOrDefault() as SalesforceAttribute;
+                    if (sfAttr != null)
+                    {
+                        if (sfAttr.Ignore)
+                        {
+                            continue;
+                        }
+                        if (!string.IsNullOrEmpty(sfAttr.FieldName))
+                        {
+                            propNames.Add(sfAttr.FieldName);
+                            continue;
+                        }
+                    }
+                }
+
+                propNames.Add(prop.Name);
+            }
+
+            return String.Join(", ", propNames);
         }
 
         /// <summary>

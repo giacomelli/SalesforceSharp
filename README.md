@@ -10,6 +10,7 @@ Features
 ===
  - Create, Update, Delete and Query records.
  - FindById to easy found records.
+ - SalesforceAttribute (Ignore, IgnoreUpdate and FieldName).
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
    	- Others authentication flows can be added implementing IAuthenticationFlow.
@@ -125,9 +126,9 @@ Roadmap
 How to improve it?
 ======
 
-Create a fork of [SalesforceSharp](https://github.com/giacomelli/SalesforceSharp/fork). 
-
-Did you change it? [Submit a pull request](https://github.com/giacomelli/SalesforceSharp/pull/new/master).
+- Create a fork of [SalesforceSharp](https://github.com/giacomelli/SalesforceSharp/fork). 
+- Follow our [develoment guidelines](https://github.com/giacomelli/SalesforceSharp/wiki/Development-Guidelines).
+- Did you change it? [Submit a pull request](https://github.com/giacomelli/SalesforceSharp/pull/new/master).
 
 
 License
@@ -139,6 +140,8 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
+ - 0.6.8 Added SalesforceAttribute (Ignore, IgnoreUpdate and FieldName) and some typed models to bind from Salesforce. 
+ - 0.6.7 Added ability to set extra http request headers
  - 0.6.6 Marked constructor and helper methods as protected to allow extension (http://goo.gl/aPCL4f).
  - 0.6.5 Added ability to use alternate/custom service end-point (http://goo.gl/PddRiW).
  - 0.6.1 Publish NuGet package.
