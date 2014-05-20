@@ -213,6 +213,26 @@ namespace SalesforceSharp.FunctionalTests
 
         #endregion
 
+        #region GetRaw
+        [Test]
+        public void GetRaw_ValidRecord()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+            var actual = target.GetRaw("Contact", id);
+
+            Assert.IsNotNull(actual);
+            Assert.That(actual.Contains(string.Format("\"FirstName\":\"{0}\"", record.FirstName)));
+            Assert.That(actual.Contains(string.Format("\"LastName\":\"{0}\"", record.LastName)));
+        }
+        #endregion
+
         #region FindById
         [Test]
         public void FindById_NotExistingID_Null()
