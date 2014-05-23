@@ -215,7 +215,7 @@ namespace SalesforceSharp.FunctionalTests
 
         #region GetRaw
         [Test]
-        public void GetRaw_ValidRecord()
+        public void GetRawGetRawContent_ValidRecord()
         {
             var target = CreateClientAndAuth();
             var record = new
@@ -225,7 +225,27 @@ namespace SalesforceSharp.FunctionalTests
             };
 
             var id = target.Create("Contact", record);
-            var actual = target.GetRaw("Contact", id);
+            var actual = target.GetRawContent("Contact", id);
+
+            Assert.IsNotNull(actual);
+            Assert.That(actual.Contains(string.Format("\"FirstName\":\"{0}\"", record.FirstName)));
+            Assert.That(actual.Contains(string.Format("\"LastName\":\"{0}\"", record.LastName)));
+        }
+
+        [Test]
+        public void GetRawBytes_ValidRecord()
+        {
+            var target = CreateClientAndAuth();
+            var record = new
+            {
+                FirstName = "Name " + DateTime.Now.Ticks,
+                LastName = "Last name"
+            };
+
+            var id = target.Create("Contact", record);
+            var bytes = target.GetRawBytes("Contact", id);
+
+            string actual = System.Text.Encoding.UTF8.GetString(bytes);
 
             Assert.IsNotNull(actual);
             Assert.That(actual.Contains(string.Format("\"FirstName\":\"{0}\"", record.FirstName)));

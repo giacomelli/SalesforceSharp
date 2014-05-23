@@ -356,7 +356,7 @@ namespace SalesforceSharp
         /// <param name="recordId">The record id</param>
         /// <param name="altUrl">The url to use without the instance url</param>
         /// <returns>The returned content as a string</returns>
-        public string GetRaw(string objectName, string recordId, string altUrl)
+        public string GetRawContent(string objectName, string recordId, string altUrl)
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
             ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
@@ -373,7 +373,7 @@ namespace SalesforceSharp
         /// <param name="objectName">The object name</param>
         /// <param name="recordId">The record id</param>
         /// <returns>The returned content as a string</returns>
-        public string GetRaw(string objectName, string recordId)
+        public string GetRawContent(string objectName, string recordId)
         {
             ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
             ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
@@ -381,6 +381,40 @@ namespace SalesforceSharp
             var response = RequestRaw(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId));
 
             return response.Content;
+        }
+
+        /// <summary>
+        /// Returns the raw byte array of a GET request to the given object
+        /// </summary>
+        /// <param name="objectName">The object name</param>
+        /// <param name="recordId">The record id</param>
+        /// <param name="altUrl">The url to use without the instance url</param>
+        /// <returns>The returned binary content as a byte array</returns>
+        public byte[] GetRawBytes(string objectName, string recordId, string altUrl)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+            ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
+
+            var response = RequestRaw(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId));
+
+            return response.RawBytes;
+        }
+
+        /// <summary>
+        /// Returns the raw byte array of a GET request to the given object
+        /// </summary>
+        /// <param name="objectName">The object name</param>
+        /// <param name="recordId">The record id</param>
+        /// <returns>The returned binary content as a byte array</returns>
+        public byte[] GetRawBytes(string objectName, string recordId)
+        {
+            ExceptionHelper.ThrowIfNullOrEmpty("objectName", objectName);
+            ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
+
+            var response = RequestRaw(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId));
+
+            return response.RawBytes;
         }
 
         #endregion
