@@ -10,6 +10,8 @@ Features
 ===
  - Create, Update, Delete and Query records.
  - FindById to easy found records.
+ - GetRawContent to get raw string results.
+ - GetRawBytes to get raw bytes results, useful to work with blobs.
  - SalesforceAttribute (Ignore, IgnoreUpdate and FieldName).
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
@@ -140,6 +142,7 @@ In others words, you can use this library for developement any kind of software:
 
 Change Log
 ======
+ - 0.7.2 Updated with pull-requests #9, #10, #11 and #12.
  - 0.6.8 Added SalesforceAttribute (Ignore, IgnoreUpdate and FieldName) and some typed models to bind from Salesforce. 
  - 0.6.7 Added ability to set extra http request headers
  - 0.6.6 Marked constructor and helper methods as protected to allow extension (http://goo.gl/aPCL4f).
