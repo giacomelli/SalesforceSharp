@@ -215,7 +215,7 @@ namespace SalesforceSharp.FunctionalTests
 
         #region GetRaw
         [Test]
-        public void GetRawGetRawContent_ValidRecord()
+        public void GetRawContent_ValidRecord()
         {
             var target = CreateClientAndAuth();
             var record = new
