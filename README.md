@@ -21,7 +21,7 @@ Features
  - 100% Unit Tests coveraged 
  - 100% code documentation
  - FxCop validated
- - Good (and good used) design patterns  
+ - Good (and well used) design patterns  
 
 --------
 
