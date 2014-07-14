@@ -9,13 +9,13 @@ An easy-to-use .NET client library for Salesforce REST API
 Features
 ===
  - Create, Update, Delete and Query records.
- - FindById to easy found records.
+ - FindById for finding records easily.
  - GetRawContent to get raw string results.
- - GetRawBytes to get raw bytes results, useful to work with blobs.
+ - GetRawBytes to get raw bytes results, useful for working with blobs.
  - SalesforceAttribute (Ignore, IgnoreUpdate and FieldName).
  - Authentication flows
    	- UsernamePasswordAuthenticationFlow
-   	- Others authentication flows can be added implementing IAuthenticationFlow.
+   	- Others authentication flows can be added by implementing IAuthenticationFlow.
  - Mono support
  - Fully tested on Windows and OSX
  - 100% Unit Tests coveraged 
