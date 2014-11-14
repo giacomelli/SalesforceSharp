@@ -2,6 +2,7 @@
 using HelperSharp;
 using RestSharp;
 using SalesforceSharp.Serialization;
+using System;
 
 namespace SalesforceSharp.Security
 {
@@ -91,7 +92,8 @@ namespace SalesforceSharp.Security
         /// </remarks>
         public AuthenticationInfo Authenticate()
         {
-            m_restClient.BaseUrl = TokenRequestEndpointUrl;
+            Uri uri = new Uri(TokenRequestEndpointUrl);
+            m_restClient.BaseUrl = uri;
 
             var request = new RestRequest(Method.POST);
             request.RequestFormat = DataFormat.Json;

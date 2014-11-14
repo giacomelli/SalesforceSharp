@@ -477,7 +477,8 @@ namespace SalesforceSharp
         /// <returns>A rest request object</returns>
         private RestRequest BuildRequest(string baseUrl, string objectName, object record, Method method)
         {
-            m_restClient.BaseUrl = baseUrl;
+            Uri uri = new Uri(baseUrl);
+            m_restClient.BaseUrl = uri;
             var request = new RestRequest(objectName)
             {
                 RequestFormat = DataFormat.Json,
