@@ -14,8 +14,8 @@ namespace SalesforceSharp.UnitTests.Security
         [Test]
         public void Constructor_NoRestClient_DefaultValues()
         {
-           var target = new UsernamePasswordAuthenticationFlow("clientId", "clientSecret", "username", "password");
-           Assert.IsNotNull(target);
+            var target = new UsernamePasswordAuthenticationFlow("clientId", "clientSecret", "username", "password");
+            Assert.IsNotNull(target);
         }
 
         [Test]
@@ -55,11 +55,11 @@ namespace SalesforceSharp.UnitTests.Security
             response.Expect(r => r.StatusCode).Return(HttpStatusCode.BadRequest);
 
             var restClient = MockRepository.GenerateMock<IRestClient>();
-            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("tokenUrl");
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument(new Uri("http://tokenUrl"));
             restClient.Expect(r => r.Execute(null)).IgnoreArguments().Return(response);
 
             var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");
-            target.TokenRequestEndpointUrl = "tokenUrl";
+            target.TokenRequestEndpointUrl = "http://tokenUrl";
 
             ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.AuthenticationFailure, "authentication failed"), () =>
             {
@@ -75,10 +75,10 @@ namespace SalesforceSharp.UnitTests.Security
             response.Expect(r => r.StatusCode).Return(HttpStatusCode.OK);
 
             var restClient = MockRepository.GenerateMock<IRestClient>();
-            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument("https://login.salesforce.com/services/oauth2/token");
+            restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument(new Uri("https://login.salesforce.com/services/oauth2/token"));
             restClient.Expect(r => r.Execute(null)).IgnoreArguments().Return(response);
 
-            var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");            
+            var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");
             var actual = target.Authenticate();
             Assert.AreEqual("access token 1", actual.AccessToken);
             Assert.AreEqual("instance url 2", actual.InstanceUrl);
