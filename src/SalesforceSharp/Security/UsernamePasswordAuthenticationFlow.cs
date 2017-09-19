@@ -43,6 +43,19 @@ namespace SalesforceSharp.Security
             this(new RestClient(), clientId, clientSecret, username, password)
         {            
         }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UsernamePasswordAuthenticationFlow"/> class.
+        /// </summary>
+        /// <param name="clientId">The client id.</param>
+        /// <param name="clientSecret">The client secret.</param>
+        /// <param name="username">The username.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="password">The token request endpoint url.</param>
+        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl) : 
+            this(new RestClient(), clientId, clientSecret, username, password, tokenRequestEndpointUrl)
+        {            
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UsernamePasswordAuthenticationFlow"/> class.
@@ -52,7 +65,8 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password)
+        /// <param name="password">The token request endpoint url.</param>
+        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
         {
             ExceptionHelper.ThrowIfNull("restClient", restClient);
             ExceptionHelper.ThrowIfNullOrEmpty("clientId", clientId);
@@ -65,7 +79,7 @@ namespace SalesforceSharp.Security
             m_clientSecret = clientSecret;
             m_username = username;
             m_password = password;
-            TokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token";
+            TokenRequestEndpointUrl = tokenRequestEndpointUrl;
         }
         #endregion
 
