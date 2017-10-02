@@ -30,7 +30,7 @@ namespace SalesforceSharp
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the <see cref="SalesforceClient"/> class.
-        /// </summary>        
+        /// </summary>
         public SalesforceClient()
             : this(new RestClient())
         {
@@ -265,7 +265,7 @@ namespace SalesforceSharp
             ExceptionHelper.ThrowIfNullOrEmpty("recordId", recordId);
             ExceptionHelper.ThrowIfNull("record", record);
 
-            var response = Request<object>(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
+            var response = RequestRaw(GetUrl("sobjects"), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
             var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;
@@ -287,7 +287,7 @@ namespace SalesforceSharp
             ExceptionHelper.ThrowIfNull("record", record);
             ExceptionHelper.ThrowIfNullOrEmpty("altUrl", altUrl);
 
-            var response = Request<object>(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
+            var response = RequestRaw(GetAltUrl(altUrl), "{0}/{1}".With(objectName, recordId), record, Method.PATCH);
 
             // HTTP status code 204 is returned if an existing record is updated.
             var recordUpdated = response.StatusCode == HttpStatusCode.NoContent;
