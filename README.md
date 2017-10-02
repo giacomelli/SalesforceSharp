@@ -1,6 +1,5 @@
 SalesforceSharp
 ===============
-[![Build Status](https://travis-ci.org/giacomelli/SalesforceSharp.png?branch=master)](https://travis-ci.org/giacomelli/SalesforceSharp)
 
 An easy-to-use .NET client library for Salesforce REST API
 
