@@ -17,7 +17,7 @@ namespace SalesforceSharp
     /// <summary>
     /// The central point to communicate with Salesforce REST API.
     /// </summary>
-    public class SalesforceClient
+    public class SalesforceClient : ISalesforceClient
     {
         #region Fields
 
