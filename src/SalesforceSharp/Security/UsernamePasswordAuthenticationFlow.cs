@@ -1,8 +1,10 @@
-﻿using System.Net;
-using HelperSharp;
+﻿using HelperSharp;
 using RestSharp;
 using SalesforceSharp.Serialization;
 using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SalesforceSharp.Security
 {
@@ -12,11 +14,11 @@ namespace SalesforceSharp.Security
     /// <remarks>
     /// Warning: This OAuth authentication flow involves passing the user’s credentials back and forth. Use this
     /// authentication flow only when necessary. No refresh token will be issued.
-    /// 
-    /// You should only use the password access grant type in situations such as an AUTONOMOUS CLIENT, where a user cannot be present 
-    /// at application startup. In this instance, you should carefully set the API user's permissions to minimize its access as far as possible, 
+    ///
+    /// You should only use the password access grant type in situations such as an AUTONOMOUS CLIENT, where a user cannot be present
+    /// at application startup. In this instance, you should carefully set the API user's permissions to minimize its access as far as possible,
     /// and protect the API user's stored credentials from unauthorized access.
-    /// 
+    ///
     /// More info at:
     /// http://wiki.developerforce.com/page/Digging_Deeper_into_OAuth_2.0_on_Force.com
     /// </remarks>
@@ -24,14 +26,17 @@ namespace SalesforceSharp.Security
     public class UsernamePasswordAuthenticationFlow : IAuthenticationFlow
     {
         #region Fields
-        private IRestClient m_restClient;
-        private string m_clientId;
-        private string m_clientSecret;
-        private string m_username;
-        private string m_password;
-        #endregion
+
+        private readonly IRestClient m_restClient;
+        private readonly string m_clientId;
+        private readonly string m_clientSecret;
+        private readonly string m_username;
+        private readonly string m_password;
+
+        #endregion Fields
 
         #region Constructors
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UsernamePasswordAuthenticationFlow"/> class.
         /// </summary>
@@ -39,11 +44,11 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password) : 
+        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password) :
             this(new RestClient(), clientId, clientSecret, username, password)
-        {            
+        {
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="UsernamePasswordAuthenticationFlow"/> class.
         /// </summary>
@@ -51,10 +56,10 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
-        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl) : 
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
+        public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl) :
             this(new RestClient(), clientId, clientSecret, username, password, tokenRequestEndpointUrl)
-        {            
+        {
         }
 
         /// <summary>
@@ -65,7 +70,7 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
         internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
         {
             ExceptionHelper.ThrowIfNull("restClient", restClient);
@@ -81,9 +86,11 @@ namespace SalesforceSharp.Security
             m_password = password;
             TokenRequestEndpointUrl = tokenRequestEndpointUrl;
         }
-        #endregion
+
+        #endregion Constructors
 
         #region Properties
+
         /// <summary>
         /// Gets or sets the token request endpoint url.
         /// </summary>
@@ -92,9 +99,11 @@ namespace SalesforceSharp.Security
         /// For sandbox use "https://test.salesforce.com/services/oauth2/token.
         /// </remarks>
         public string TokenRequestEndpointUrl { get; set; }
-        #endregion
+
+        #endregion Properties
 
         #region Methods
+
         /// <summary>
         /// Authenticate in the Salesforce REST's API.
         /// </summary>
@@ -130,8 +139,47 @@ namespace SalesforceSharp.Security
             else
             {
                 throw new SalesforceException(responseData.error.Value, responseData.error_description.Value);
-            }            
+            }
         }
-        #endregion
+
+        /// <summary>
+        /// Authenticate in the Salesforce REST's API async.
+        /// </summary>
+        /// <returns>
+        /// The authentication info with access token and instance url for futher API calls.
+        /// </returns>
+        /// <remarks>
+        /// If authentiaction fails an SalesforceException will be throw.
+        /// </remarks>
+        public async Task<AuthenticationInfo> AuthenticateAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Uri uri = new Uri(TokenRequestEndpointUrl);
+            m_restClient.BaseUrl = uri;
+
+            var request = new RestRequest(Method.POST);
+            request.RequestFormat = DataFormat.Json;
+            request.AddParameter("grant_type", "password");
+            request.AddParameter("client_id", m_clientId);
+            request.AddParameter("client_secret", m_clientSecret);
+            request.AddParameter("username", m_username);
+            request.AddParameter("password", m_password);
+
+            var response = await m_restClient.ExecuteTaskAsync(request, cancellationToken).ConfigureAwait(false);
+            var isAuthenticated = response.StatusCode == HttpStatusCode.OK;
+
+            var deserializer = new DynamicJsonDeserializer();
+            var responseData = deserializer.Deserialize<dynamic>(response);
+
+            if (isAuthenticated)
+            {
+                return new AuthenticationInfo(responseData.access_token.Value, responseData.instance_url.Value);
+            }
+            else
+            {
+                throw new SalesforceException(responseData.error.Value, responseData.error_description.Value);
+            }
+        }
+
+        #endregion Methods
     }
 }
