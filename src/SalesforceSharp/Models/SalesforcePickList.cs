@@ -30,8 +30,9 @@
         public bool DefaultValue { get; set; }
 
         /// <summary>
-        /// 
+        /// Gets or sets the value of the Base64 encoded Index of the <see cref="SalesforceSharp.Models.SalesforcePickList"/> controlling field.
         /// </summary>
+        /// <value>A Base64 encoded string</value>
         public string ValidFor { get; set; }
     }
 }
