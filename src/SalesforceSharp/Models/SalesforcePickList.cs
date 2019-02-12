@@ -28,5 +28,10 @@
 		/// </summary>
 		/// <value><c>true</c> if default value; otherwise, <c>false</c>.</value>
         public bool DefaultValue { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ValidFor { get; set; }
     }
 }
