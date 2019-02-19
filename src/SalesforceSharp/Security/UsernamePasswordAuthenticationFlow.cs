@@ -51,7 +51,7 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
         public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl) : 
             this(new RestClient(), clientId, clientSecret, username, password, tokenRequestEndpointUrl)
         {            
@@ -65,8 +65,8 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
-        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
+        internal UsernamePasswordAuthenticationFlow (IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
         {
             ExceptionHelper.ThrowIfNull("restClient", restClient);
             ExceptionHelper.ThrowIfNullOrEmpty("clientId", clientId);
