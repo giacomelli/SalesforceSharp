@@ -109,8 +109,9 @@ namespace SalesforceSharp.Security
             Uri uri = new Uri(TokenRequestEndpointUrl);
             m_restClient.BaseUrl = uri;
 
-            var request = new RestRequest(Method.POST);
-            request.RequestFormat = DataFormat.Json;
+            var request = new RestRequest (Method.POST) {
+                RequestFormat = DataFormat.Json
+            };
             request.AddParameter("grant_type", "password");
             request.AddParameter("client_id", m_clientId);
             request.AddParameter("client_secret", m_clientSecret);
@@ -120,7 +121,7 @@ namespace SalesforceSharp.Security
             var response = m_restClient.Post(request);
             var isAuthenticated = response.StatusCode == HttpStatusCode.OK;
 
-            var deserializer = new DynamicJsonDeserializer();
+            var deserializer = new GenericJsonDeserializer (new SalesforceContractResolver (false));
             var responseData = deserializer.Deserialize<dynamic>(response);
 
             if (isAuthenticated)

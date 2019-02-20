@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using HelperSharp;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 using RestSharp;
 using SalesforceSharp.Models;
 using SalesforceSharp.Security;
@@ -113,7 +111,7 @@ namespace SalesforceSharp
         /// <returns>The API result for the query.</returns>
         public IList<T> QueryActionBatch<T>(string query, Action<IList<T>> action, string altUrl = "") where T : new()
         {
-            if (action == null) throw new ArgumentNullException("action");
+            if (action == null) throw new ArgumentNullException(nameof (action));
 
             ExceptionHelper.ThrowIfNullOrEmpty("query", query);
 
