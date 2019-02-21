@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package >
+    <metadata>
+        <id>SalesforceSharp</id>
+        <description>An easy-to-use .NET client library for Salesforce REST API.</description>
+        <version>$version$</version>
+        <authors>Diego Giacomelli</authors>
+        <owners>g1acomell1</owners>
+        <licenseUrl>https://github.com/giacomelli/SalesforceSharp/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/giacomelli/SalesforceSharp</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <releaseNotes>https://github.com/giacomelli/SalesforceSharp/releases</releaseNotes>
+    </metadata>
+</package>

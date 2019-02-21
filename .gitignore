@@ -112,3 +112,6 @@ src/SalesforceSharp.FunctionalTests/test-results/
 src/test-results/
 *.userprefs
 .vs/
+.sonarqube/
+GeneratedReports/
+tools/
