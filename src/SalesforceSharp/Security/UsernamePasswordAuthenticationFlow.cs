@@ -106,6 +106,7 @@ namespace SalesforceSharp.Security
         /// </remarks>
         public AuthenticationInfo Authenticate()
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             Uri uri = new Uri(TokenRequestEndpointUrl);
             m_restClient.BaseUrl = uri;
 
@@ -123,6 +124,9 @@ namespace SalesforceSharp.Security
 
             var deserializer = new GenericJsonDeserializer (new SalesforceContractResolver (false));
             var responseData = deserializer.Deserialize<dynamic>(response);
+
+            if (responseData == null)
+                throw new SalesforceException(response.ErrorException.Message, response.ErrorMessage);
 
             if (isAuthenticated)
             {
