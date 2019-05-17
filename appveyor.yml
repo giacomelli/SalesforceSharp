@@ -11,5 +11,5 @@ build_script:
 - ps: ./build.ps1
 
 artifacts:
-  - path: .\src\*.nupkg
+  - path: .\*.nupkg
     name: NuGet package
