@@ -23,7 +23,7 @@ namespace SalesforceSharp.UnitTests.Security
         {
             ExceptionAssert.IsThrowing(new ArgumentNullException("restClient"), () =>
             {
-                new UsernamePasswordAuthenticationFlow(null, "clientId", "clientSecret", "username", "password");
+                new UsernamePasswordAuthenticationFlow((RestClient) null, "clientId", "clientSecret", "username", "password");
             });
 
             ExceptionAssert.IsThrowing(new ArgumentException("Argument 'clientId' can't be empty.", "clientId"), () =>

@@ -51,7 +51,7 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
         public UsernamePasswordAuthenticationFlow(string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl) : 
             this(new RestClient(), clientId, clientSecret, username, password, tokenRequestEndpointUrl)
         {            
@@ -65,8 +65,8 @@ namespace SalesforceSharp.Security
         /// <param name="clientSecret">The client secret.</param>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="password">The token request endpoint url.</param>
-        internal UsernamePasswordAuthenticationFlow(IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
+        /// <param name="tokenRequestEndpointUrl">The token request endpoint url.</param>
+        internal UsernamePasswordAuthenticationFlow (IRestClient restClient, string clientId, string clientSecret, string username, string password, string tokenRequestEndpointUrl = "https://login.salesforce.com/services/oauth2/token")
         {
             ExceptionHelper.ThrowIfNull("restClient", restClient);
             ExceptionHelper.ThrowIfNullOrEmpty("clientId", clientId);
@@ -106,11 +106,13 @@ namespace SalesforceSharp.Security
         /// </remarks>
         public AuthenticationInfo Authenticate()
         {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
             Uri uri = new Uri(TokenRequestEndpointUrl);
             m_restClient.BaseUrl = uri;
 
-            var request = new RestRequest(Method.POST);
-            request.RequestFormat = DataFormat.Json;
+            var request = new RestRequest (Method.POST) {
+                RequestFormat = DataFormat.Json
+            };
             request.AddParameter("grant_type", "password");
             request.AddParameter("client_id", m_clientId);
             request.AddParameter("client_secret", m_clientSecret);
@@ -120,8 +122,11 @@ namespace SalesforceSharp.Security
             var response = m_restClient.Post(request);
             var isAuthenticated = response.StatusCode == HttpStatusCode.OK;
 
-            var deserializer = new DynamicJsonDeserializer();
+            var deserializer = new GenericJsonDeserializer (new SalesforceContractResolver (false));
             var responseData = deserializer.Deserialize<dynamic>(response);
+
+            if (responseData == null)
+                throw new SalesforceException(response.ErrorException.Message, response.ErrorMessage);
 
             if (isAuthenticated)
             {

@@ -1,0 +1,15 @@
+version: 1.0.{build}
+os: Visual Studio 2017
+configuration: Release
+environment:
+  clone_folder: c:\SalesforceSharp
+
+install:
+- cmd: choco install cake.portable
+
+build_script:
+- ps: ./build.ps1
+
+artifacts:
+  - path: .\*.nupkg
+    name: NuGet package

@@ -31,7 +31,7 @@ namespace SalesforceSharp.FunctionalTests
         {
             var target = new SalesforceClient();
 
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidPassword, "authentication failure - invalid password"), () =>
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidPassword, "authentication failure"), () =>
             {
                 target.Authenticate(CreateAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, "invalid password"));
             });
@@ -95,8 +95,8 @@ namespace SalesforceSharp.FunctionalTests
 
             if (actual.Count > 0)
             {
-                Assert.IsNotNullOrEmpty(actual[0].Id);
-                Assert.IsNotNullOrEmpty(actual[0].Name);
+                Assert.IsNotNull(actual[0].Id);
+                Assert.IsNotNull(actual[0].Name);
             }
 
             actual = target.Query<RecordStub>("SELECT id, name FROM Account WHERE LastModifiedDate = 2013-12-01T12:00:00+00:00");
@@ -114,9 +114,9 @@ namespace SalesforceSharp.FunctionalTests
 
             if (actual.Count > 0)
             {
-                Assert.IsNotNullOrEmpty(actual[0].Id);
-                Assert.IsNotNullOrEmpty(actual[0].Name);
-                Assert.IsNotNullOrEmpty(actual[0].PhoneCustom);
+                Assert.IsNotNull (actual[0].Id);
+                Assert.IsNotNull (actual[0].Name);
+                Assert.IsNotNull (actual[0].PhoneCustom);
             }
         }
 
@@ -288,7 +288,7 @@ namespace SalesforceSharp.FunctionalTests
 
             string result = target.ReadMetaData("Account");
 
-            Assert.IsNotNullOrEmpty(result);
+            Assert.IsNotEmpty(result);
         }
         #endregion
 
