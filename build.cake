@@ -1,7 +1,7 @@
-#tool "nuget:?package=NUnit.Runners&version=2.6.4"
+#tool "nuget:?package=NUnit.ConsoleRunner&version=3.10.0"
 
 var target = Argument("target", "Default");
-var solutionDir = "src";
+var version = "1.0.0";
 
 Task("Build")
     .Does(() =>
@@ -24,23 +24,27 @@ Task("Build")
 Task("Test")
     .Does(() =>
 {
-    NUnit("./src/SalesforceSharp.UnitTests/bin/Debug/SalesforceSharp.UnitTests.dll");
-    NUnit("./src/SalesforceSharp.FunctionalTests/bin/Debug/SalesforceSharp.FunctionalTests.dll");
+    NUnit3("./src/SalesforceSharp.UnitTests/bin/Debug/SalesforceSharp.UnitTests.dll");
+    NUnit3("./src/SalesforceSharp.FunctionalTests/bin/Debug/SalesforceSharp.FunctionalTests.dll");
 });
 
 Task("Package")
     .Does(() =>{
-        NuGetPack("./src/SalesforceSharp.nuspec", new NuGetPackSettings{
-            Version = "0.7.5", 
+        var nuspecFile = "./src/SalesforceSharp/bin/Release/SalesforceSharp.nuspec";
+        
+        CopyFile("./src/SalesforceSharp.nuspec", nuspecFile);
+
+        NuGetPack(nuspecFile, new NuGetPackSettings{
+            Version = version, 
             Verbosity = NuGetVerbosity.Detailed,
         }
     );
 });
 
-Task("Default")
-    .IsDependentOn("Package")
-    .IsDependentOn("Test")
+Task("Default")    
     .IsDependentOn("Build")
+    .IsDependentOn("Test")    
+    .IsDependentOn("Package")
 	.Does(()=> { 
 });
 
