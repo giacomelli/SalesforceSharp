@@ -115,3 +115,4 @@ src/test-results/
 .sonarqube/
 GeneratedReports/
 tools/
+*.nupkg

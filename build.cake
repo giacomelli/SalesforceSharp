@@ -6,14 +6,18 @@ var version = "1.0.0";
 Task("Build")
     .Does(() =>
 {
-    MSBuild("./src/SalesforceSharp.sln", 
+    var solution = "./src/SalesforceSharp.sln";
+
+    NuGetRestore(solution);
+    
+    MSBuild(solution, 
         new MSBuildSettings {
             Verbosity = Verbosity.Minimal,
             Configuration = "Release"
         }
     );
 
-    MSBuild("./src/SalesforceSharp.sln", 
+    MSBuild(solution, 
         new MSBuildSettings {
             Verbosity = Verbosity.Minimal,
             Configuration = "Debug"
