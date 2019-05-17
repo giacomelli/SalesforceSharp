@@ -1,0 +1,8 @@
+version: 1.0.{build}
+os: Visual Studio 2017
+configuration: Release
+environment:
+  clone_folder: c:\SalesforceSharp
+
+build_script:
+- ps: ./build.ps1
