@@ -4,5 +4,12 @@ configuration: Release
 environment:
   clone_folder: c:\SalesforceSharp
 
+install:
+- cmd: choco install cake.portable
+
 build_script:
 - ps: ./build.ps1
+
+artifacts:
+  - path: .\src\*.nupkg
+    name: NuGet package
