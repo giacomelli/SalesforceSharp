@@ -26,7 +26,7 @@ namespace SalesforceSharp.FunctionalTests.Security
             var target = new UsernamePasswordAuthenticationFlow(TestConfig.ClientId, TestConfig.ClientSecret, TestConfig.Username, "invalid password");
             target.TokenRequestEndpointUrl = TestConfig.TokenRequestEndpointUrl;
 
-            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidPassword, "authentication failure - invalid password"), () =>
+            ExceptionAssert.IsThrowing(new SalesforceException(SalesforceError.InvalidPassword, "authentication failure"), () =>
             {
                 target.Authenticate();
             });

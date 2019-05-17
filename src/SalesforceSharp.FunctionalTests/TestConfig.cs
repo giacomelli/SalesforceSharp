@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using TestSharp;
 
 namespace SalesforceSharp.FunctionalTests
@@ -16,12 +17,13 @@ namespace SalesforceSharp.FunctionalTests
         {
             try
             {
-                TokenRequestEndpointUrl = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "TokenRequestEndpointUrl");
-                ClientId = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ClientId");
-                ClientSecret = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ClientSecret");
-                Username = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "Username");
-                Password = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "Password");
-                ObjectName = ConfigHelper.ReadAppSetting("SalesforceSharp.FunctionalTests", "ObjectName");                
+                var reader = new AppSettingsReader ();
+                TokenRequestEndpointUrl = reader.GetValue("TokenRequestEndpointUrl", typeof(string)) as string;
+                ClientId = reader.GetValue("ClientId", typeof (string)) as string;
+                ClientSecret = reader.GetValue("ClientSecret", typeof (string)) as string;
+                Username = reader.GetValue("Username", typeof (string)) as string;
+                Password = reader.GetValue("Password", typeof (string)) as string;
+                ObjectName = reader.GetValue("ObjectName", typeof (string)) as string;
             }
             catch (Exception ex)
             {

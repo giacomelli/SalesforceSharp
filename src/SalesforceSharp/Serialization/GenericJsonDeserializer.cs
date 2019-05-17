@@ -34,7 +34,7 @@ namespace SalesforceSharp.Serialization
 
         public GenericJsonDeserializer(SalesforceContractResolver salesForceContractResolver)
         {
-            if (salesForceContractResolver == null) throw new ArgumentNullException("salesForceContractResolver");
+            if (salesForceContractResolver == null) throw new ArgumentNullException(nameof (salesForceContractResolver));
             this.salesForceContractResolver = salesForceContractResolver;
         }
 

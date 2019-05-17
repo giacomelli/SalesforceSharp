@@ -111,3 +111,8 @@ src/SalesforceSharp.UnitTests/test-results/
 src/SalesforceSharp.FunctionalTests/test-results/
 src/test-results/
 *.userprefs
+.vs/
+.sonarqube/
+GeneratedReports/
+tools/
+*.nupkg

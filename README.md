@@ -1,6 +1,8 @@
 SalesforceSharp
 ===============
 
+[![Build status](https://ci.appveyor.com/api/projects/status/0tcc8lbbhrqc86hc/branch/master?svg=true)](https://ci.appveyor.com/project/giacomelli/salesforcesharp/branch/master)
+
 An easy-to-use .NET client library for Salesforce REST API
 
 --------
@@ -137,14 +139,3 @@ License
 
 Licensed under the The MIT License (MIT).
 In others words, you can use this library for developement any kind of software: open source, commercial, proprietary and alien.
-
-
-Change Log
-======
- - 0.7.2 Updated with pull-requests #9, #10, #11 and #12.
- - 0.6.8 Added SalesforceAttribute (Ignore, IgnoreUpdate and FieldName) and some typed models to bind from Salesforce. 
- - 0.6.7 Added ability to set extra http request headers
- - 0.6.6 Marked constructor and helper methods as protected to allow extension (http://goo.gl/aPCL4f).
- - 0.6.5 Added ability to use alternate/custom service end-point (http://goo.gl/PddRiW).
- - 0.6.1 Publish NuGet package.
- - 0.5.0 First version.

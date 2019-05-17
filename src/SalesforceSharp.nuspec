@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>SalesforceSharp</id>
+    <version>$version$</version>
+    <title>SalesforceSharp</title>
+    <authors>Diego Giacomelli</authors>
+    <owners>g1acomell1</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <projectUrl>https://github.com/giacomelli/SalesforceSharp</projectUrl>
+    <description>An easy-to-use .NET client library for Salesforce REST API.</description>
+    <summary>An easy-to-use .NET client library for Salesforce REST API</summary>
+    <releaseNotes>Updated with pull-requests 14: https://github.com/giacomelli/SalesforceSharp/issues?page=1&amp;state=closed</releaseNotes>
+    <tags>salesforce rest clientlibrary</tags>
+    <dependencies>
+      <dependency id="HelperSharp" version="0.0.4.1" />
+      <dependency id="Newtonsoft.Json" version="6.0.6" />
+      <dependency id="RestSharp" version="105.0.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="SalesforceSharp.dll" target="lib/net472/SalesforceSharp.dll" />
+    <file src="SalesforceSharp.pdb" target="lib/net472/SalesforceSharp.pdb" />
+    <file src="SalesforceSharp.XML" target="lib/net472/SalesforceSharp.xml" />
+  </files>
+</package>
