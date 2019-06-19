@@ -19,8 +19,8 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="SalesforceSharp.dll" target="lib/net472/SalesforceSharp.dll" />
-    <file src="SalesforceSharp.pdb" target="lib/net472/SalesforceSharp.pdb" />
-    <file src="SalesforceSharp.XML" target="lib/net472/SalesforceSharp.xml" />
+    <file src="SalesforceSharp.dll" target="lib/net45/SalesforceSharp.dll" />
+    <file src="SalesforceSharp.pdb" target="lib/net45/SalesforceSharp.pdb" />
+    <file src="SalesforceSharp.XML" target="lib/net45/SalesforceSharp.xml" />
   </files>
 </package>
