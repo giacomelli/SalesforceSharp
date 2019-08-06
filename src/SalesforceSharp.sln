@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp", "Salesfor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.UnitTests", "SalesforceSharp.UnitTests\SalesforceSharp.UnitTests.csproj", "{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SalesforceSharp.FunctionalTests", "SalesforceSharp.FunctionalTests\SalesforceSharp.FunctionalTests.csproj", "{276ECE17-1F85-430F-AF1A-68D50B8B9A27}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EFC38B5-5011-4F95-B29A-3809D4E70D7D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{276ECE17-1F85-430F-AF1A-68D50B8B9A27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
