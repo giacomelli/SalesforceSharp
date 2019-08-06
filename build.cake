@@ -29,7 +29,6 @@ Task("Test")
     .Does(() =>
 {
     NUnit3("./src/SalesforceSharp.UnitTests/bin/Debug/SalesforceSharp.UnitTests.dll");
-    NUnit3("./src/SalesforceSharp.FunctionalTests/bin/Debug/SalesforceSharp.FunctionalTests.dll");
 });
 
 Task("Package")
