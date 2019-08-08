@@ -13,9 +13,9 @@
     <releaseNotes>Updated with pull-requests 14: https://github.com/giacomelli/SalesforceSharp/issues?page=1&amp;state=closed</releaseNotes>
     <tags>salesforce rest clientlibrary</tags>
     <dependencies>
-      <dependency id="HelperSharp" version="0.0.4.1" />
-      <dependency id="Newtonsoft.Json" version="6.0.6" />
-      <dependency id="RestSharp" version="105.0.1" />
+      <dependency id="HelperSharp" version="0.0.4.2" />
+      <dependency id="Newtonsoft.Json" version="11.0.2" />
+      <dependency id="RestSharp" version="105.2.3" />
     </dependencies>
   </metadata>
   <files>
