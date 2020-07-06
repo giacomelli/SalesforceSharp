@@ -106,7 +106,10 @@ namespace SalesforceSharp.Security
         /// </remarks>
         public AuthenticationInfo Authenticate()
         {
-            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+            if (ServicePointManager.SecurityProtocol != 0)
+            {
+                ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
+            }
             Uri uri = new Uri(TokenRequestEndpointUrl);
             m_restClient.BaseUrl = uri;
 
