@@ -250,6 +250,8 @@ namespace SalesforceSharp.FunctionalTests
             Assert.IsNotNull(actual);
             Assert.That(actual.Contains(string.Format("\"FirstName\":\"{0}\"", record.FirstName)));
             Assert.That(actual.Contains(string.Format("\"LastName\":\"{0}\"", record.LastName)));
+            Assert.AreNotEqual(target.ApiCallsUsed, 0);
+            Assert.AreEqual(target.ApiCallsLimit, 15000);
         }
         #endregion
 
