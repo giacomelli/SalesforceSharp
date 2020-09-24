@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/giacomelli/SalesforceSharp</projectUrl>
     <description>An easy-to-use .NET client library for Salesforce REST API.</description>
     <summary>An easy-to-use .NET client library for Salesforce REST API</summary>
-    <releaseNotes>Updated with pull-requests 14: https://github.com/giacomelli/SalesforceSharp/issues?page=1&amp;state=closed</releaseNotes>
+    <releaseNotes>Updated with latest pull-requests: https://github.com/giacomelli/SalesforceSharp/issues?page=1&amp;state=closed</releaseNotes>
     <tags>salesforce rest clientlibrary</tags>
     <dependencies>
       <dependency id="HelperSharp" version="0.0.4.1" />
