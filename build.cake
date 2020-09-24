@@ -1,7 +1,7 @@
 #tool "nuget:?package=NUnit.ConsoleRunner&version=3.10.0"
 
 var target = Argument("target", "Default");
-var version = "1.0.1";
+var version = "1.1.0";
 
 Task("Build")
     .Does(() =>
