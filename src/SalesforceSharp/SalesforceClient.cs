@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using HelperSharp;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -23,6 +24,7 @@ namespace SalesforceSharp
         private IRestClient m_restClient;
         private GenericJsonDeserializer genericJsonDeserializer;
         private GenericJsonSerializer updateJsonSerializer;
+        private static readonly Regex apiUsageRegexp = new Regex(@"api-usage=(\d+)/(\d+)", RegexOptions.Compiled);
         #endregion
 
         #region Constructors
@@ -75,6 +77,22 @@ namespace SalesforceSharp
         /// The instance URL.
         /// </value>
         public string InstanceUrl { get; private set; }
+        
+        /// <summary>
+        /// Get current API calls number
+        /// </summary>
+        /// <value>
+        /// current API calls number
+        /// </value>        
+        public int ApiCallsUsed { get; private set; }
+        
+        /// <summary>
+        /// Get total API calls limit
+        /// </summary>
+        /// <value>
+        /// API calls limit
+        /// </value>        
+        public int ApiCallsLimit { get; private set; }
         #endregion
 
         #region Methods
@@ -461,6 +479,7 @@ namespace SalesforceSharp
 
             var response = m_restClient.Execute(request);
             CheckApiException(response);
+            ExtractLimitsInfo(response);
 
             return response;
         }
@@ -520,6 +539,20 @@ namespace SalesforceSharp
             {
                 var ex = new FormatException(string.Format("{0}{1}{2}", response.ErrorException.Message, Environment.NewLine, response.Content));
                 throw ex;
+            }
+        }
+        
+        private void ExtractLimitsInfo(IRestResponse response)
+        {
+            var limitHeader = response.Headers?.FirstOrDefault(h => h.Name == "Sforce-Limit-Info");
+            if (limitHeader?.Value != null)
+            {
+                var match = apiUsageRegexp.Match(limitHeader.Value.ToString());
+                if (match.Success)
+                {
+                    ApiCallsUsed = int.Parse(match.Groups[1].Value);
+                    ApiCallsLimit = int.Parse(match.Groups[2].Value);
+                }
             }
         }
         #endregion
