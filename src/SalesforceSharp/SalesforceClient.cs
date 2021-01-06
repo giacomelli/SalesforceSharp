@@ -43,7 +43,7 @@ namespace SalesforceSharp
         protected internal SalesforceClient(IRestClient restClient)
         {
             m_restClient = restClient;
-            ApiVersion = "v28.0";
+            ApiVersion = "v50.0";
             m_deserializer = new DynamicJsonDeserializer();
             genericJsonDeserializer = new GenericJsonDeserializer(new SalesforceContractResolver(false));
             updateJsonSerializer = new GenericJsonSerializer(new SalesforceContractResolver(true));
@@ -55,7 +55,7 @@ namespace SalesforceSharp
         /// Gets or sets the API version.
         /// </summary>
         /// <remarks>
-        /// The default value is v28.0.
+        /// The default value is v50.0.
         /// </remarks>
         /// <value>
         /// The API version.
