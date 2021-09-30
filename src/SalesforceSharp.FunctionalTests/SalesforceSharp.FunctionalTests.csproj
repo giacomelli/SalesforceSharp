@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\NUnit.3.12.0\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" />
+  <Import Project="..\packages\NUnit.3.13.2\build\NUnit.props" Condition="Exists('..\packages\NUnit.3.13.2\build\NUnit.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -38,23 +38,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="HelperSharp, Version=1.0.5358.23405, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\HelperSharp.0.0.4.1\lib\net35\HelperSharp.dll</HintPath>
+    <Reference Include="HelperSharp, Version=1.0.5560.27038, Culture=neutral, PublicKeyToken=3d44152485e1a4e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\HelperSharp.0.0.4.2\lib\net35\HelperSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Ionic.Utils.Zip">
-      <HintPath>..\packages\TestSharp.1.0.2\lib\net40\Ionic.Utils.Zip.dll</HintPath>
+    <Reference Include="Ionic.Utils.Zip, Version=1.4.0.1, Culture=neutral, PublicKeyToken=c551e179877da246, processorArchitecture=MSIL">
+      <HintPath>..\packages\TestSharp.1.0.3\lib\net40\Ionic.Utils.Zip.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.6\lib\net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.12.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.12.0\lib\net40\nunit.framework.dll</HintPath>
+    <Reference Include="nunit.framework, Version=3.13.2.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\packages\NUnit.3.13.2\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="TestSharp">
-      <HintPath>..\packages\TestSharp.1.0.2\lib\net40\TestSharp.dll</HintPath>
+    <Reference Include="TestSharp, Version=0.0.6.0, Culture=neutral, PublicKeyToken=76c905e92dbc6707, processorArchitecture=MSIL">
+      <HintPath>..\packages\TestSharp.1.0.3\lib\net40\TestSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -74,7 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SalesforceSharp\SalesforceSharp.csproj">
-      <Project>{0EA33E69-D046-42AF-9BF3-4B0F49EEA1D6}</Project>
+      <Project>{25138b0a-8016-4777-a189-a951a0602790}</Project>
       <Name>SalesforceSharp</Name>
     </ProjectReference>
   </ItemGroup>
@@ -84,6 +82,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NUnit.3.12.0\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.12.0\build\NUnit.props'))" />
+    <Error Condition="!Exists('..\packages\NUnit.3.13.2\build\NUnit.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NUnit.3.13.2\build\NUnit.props'))" />
   </Target>
 </Project>

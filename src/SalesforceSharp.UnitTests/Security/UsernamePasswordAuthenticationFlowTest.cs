@@ -77,7 +77,7 @@ namespace SalesforceSharp.UnitTests.Security
             var restClient = MockRepository.GenerateMock<IRestClient>();
             restClient.Expect(r => r.BaseUrl).SetPropertyWithArgument(new Uri("https://login.salesforce.com/services/oauth2/token"));
             restClient.Expect(r => r.Execute(null)).IgnoreArguments().Return(response);
-
+            
             var target = new UsernamePasswordAuthenticationFlow(restClient, "clientId", "clientSecret", "userName", "password");
             var actual = target.Authenticate();
             Assert.AreEqual("access token 1", actual.AccessToken);

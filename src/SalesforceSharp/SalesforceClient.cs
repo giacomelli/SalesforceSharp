@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using RestSharp;
+using RestSharp.Extensions;
+using SalesforceSharp.Extensions;
+using SalesforceSharp.Models;
+using SalesforceSharp.Security;
+using SalesforceSharp.Serialization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using HelperSharp;
-using Newtonsoft.Json.Linq;
-using RestSharp;
-using SalesforceSharp.Models;
-using SalesforceSharp.Security;
-using SalesforceSharp.Serialization;
-using RestSharp.Extensions;
 
 namespace SalesforceSharp
 {
