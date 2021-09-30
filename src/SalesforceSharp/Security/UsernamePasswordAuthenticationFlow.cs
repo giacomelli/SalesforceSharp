@@ -1,8 +1,8 @@
-﻿using System.Net;
-using HelperSharp;
-using RestSharp;
+﻿using RestSharp;
+using SalesforceSharp.Extensions;
 using SalesforceSharp.Serialization;
 using System;
+using System.Net;
 
 namespace SalesforceSharp.Security
 {
