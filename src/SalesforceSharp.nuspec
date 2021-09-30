@@ -13,14 +13,14 @@
     <releaseNotes>Updated with latest pull-requests: https://github.com/giacomelli/SalesforceSharp/issues?page=1&amp;state=closed</releaseNotes>
     <tags>salesforce rest clientlibrary</tags>
     <dependencies>
-      <dependency id="HelperSharp" version="0.0.4.1" />
-      <dependency id="Newtonsoft.Json" version="6.0.6" />
-      <dependency id="RestSharp" version="105.0.1" />
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.CSharp" version="4.7.0"  />
+        <dependency id="Newtonsoft.Json" version="13.0.1"  />
+        <dependency id="RestSharp" version="106.12.0"  />
+      </group>
     </dependencies>
   </metadata>
   <files>
-    <file src="SalesforceSharp.dll" target="lib/net45/SalesforceSharp.dll" />
-    <file src="SalesforceSharp.pdb" target="lib/net45/SalesforceSharp.pdb" />
-    <file src="SalesforceSharp.XML" target="lib/net45/SalesforceSharp.xml" />
+    <file src="SalesforceSharp.dll" target="lib/netstandard2.0/SalesforceSharp.dll" />
   </files>
 </package>
